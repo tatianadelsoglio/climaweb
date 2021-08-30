@@ -1,0 +1,22 @@
+{
+  "files": {
+    "main.css": "/climaweb/static/css/main.26648a51.chunk.css",
+    "main.js": "/climaweb/static/js/main.163f31b0.chunk.js",
+    "main.js.map": "/climaweb/static/js/main.163f31b0.chunk.js.map",
+    "runtime-main.js": "/climaweb/static/js/runtime-main.2b290f55.js",
+    "runtime-main.js.map": "/climaweb/static/js/runtime-main.2b290f55.js.map",
+    "static/js/2.2502e1f0.chunk.js": "/climaweb/static/js/2.2502e1f0.chunk.js",
+    "static/js/2.2502e1f0.chunk.js.map": "/climaweb/static/js/2.2502e1f0.chunk.js.map",
+    "static/js/3.95fb84d3.chunk.js": "/climaweb/static/js/3.95fb84d3.chunk.js",
+    "static/js/3.95fb84d3.chunk.js.map": "/climaweb/static/js/3.95fb84d3.chunk.js.map",
+    "index.html": "/climaweb/index.html",
+    "static/css/main.26648a51.chunk.css.map": "/climaweb/static/css/main.26648a51.chunk.css.map",
+    "static/js/2.2502e1f0.chunk.js.LICENSE.txt": "/climaweb/static/js/2.2502e1f0.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.2b290f55.js",
+    "static/js/2.2502e1f0.chunk.js",
+    "static/css/main.26648a51.chunk.css",
+    "static/js/main.163f31b0.chunk.js"
+  ]
+}
