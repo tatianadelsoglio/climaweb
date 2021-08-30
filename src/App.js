@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import Header from './components/Header';
 import Formulario from './components/Formulario';
 import Clima from './components/clima';
-
+import Error from './components/Error';
 
 function App() {
 
@@ -19,6 +19,8 @@ function App() {
 
   const [resultado, guardarResultado] = useState({});
 
+  const [error, guardarError] = useState(false);
+
   useEffect(() => {
     
     const consultarAPI = async () => {
@@ -33,11 +35,27 @@ function App() {
   
         guardarResultado(resultado);
         guardarConsultar(false);
+
+        //Detecta si hay error
+        if(resultado.cod === "404"){
+          guardarError(true);
+        } else {
+          guardarError(false);
+        }
       }
     }
     consultarAPI();
 
   }, [ciudad, pais, consultar]);
+
+  let componente;
+  if (error) {
+    componente = <Error mensaje="No hay resultado" />
+  } else {
+    componente = <Clima
+                    resultado = {resultado}
+                  />
+  }
 
   return (
     <>
@@ -55,9 +73,8 @@ function App() {
               />
             </div>
             <div className="col m6 s12">
-              <Clima
-                resultado={resultado}
-              />
+              {componente}
+              
             </div>
           </div>
         </div>

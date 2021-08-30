@@ -1,4 +1,6 @@
 import React, {useState} from 'react';
+import Error  from './Error';
+import PropTypes from 'prop-types';
 
 const Formulario = ({busqueda, guardarBusqueda, guardarConsultar}) => {
 
@@ -37,7 +39,7 @@ const Formulario = ({busqueda, guardarBusqueda, guardarConsultar}) => {
             <form
                 onSubmit={handleSubmit}
             >
-                {error ? <p className="red darken-4 error">Todos los campos son obligatorios</p> : null}
+                {error ? <Error mensaje="Ambos campos son obligatorios"/> : null}
 
                 <div className="input-field col s12">
                     <input
@@ -79,5 +81,12 @@ const Formulario = ({busqueda, guardarBusqueda, guardarConsultar}) => {
         </>
     );
 }
+
+Formulario.propTypes = {
+    busqueda: PropTypes.object.isRequired,
+    guardarBusqueda: PropTypes.func.isRequired,
+    guardarConsultar: PropTypes.func.isRequired
+}
+
 
 export default Formulario;
