@@ -93,6 +93,8 @@ function Esqueleto() {
   );
 }
 
+const MENSAJE_ERROR = "No pudimos cargar el pronóstico de los próximos días.";
+
 export default function PanelPronostico({ pronostico, unidad }: PanelPronosticoProps) {
   return (
     <section aria-labelledby="titulo-pronostico" className="flex flex-col gap-xl">
@@ -102,12 +104,17 @@ export default function PanelPronostico({ pronostico, unidad }: PanelPronosticoP
       >
         Próximos 7 días
       </h2>
+      {/* Región viva siempre presente: anuncia la carga y el error del panel. */}
+      <p role="status" className="sr-only">
+        {pronostico.estado === "cargando" && "Cargando el pronóstico de los próximos días…"}
+        {pronostico.estado === "error" && MENSAJE_ERROR}
+      </p>
       <div
         aria-busy={pronostico.estado === "cargando"}
         className="glass overflow-hidden rounded-xl lg:rounded-2xl"
       >
         {pronostico.estado === "listo" && (
-          <ol className="flex flex-col lg:flex-row">
+          <ol role="list" className="flex flex-col lg:flex-row">
             {pronostico.hoy ? (
               <Dia dia={pronostico.hoy} etiqueta="Hoy" unidad={unidad} />
             ) : (
@@ -125,7 +132,7 @@ export default function PanelPronostico({ pronostico, unidad }: PanelPronosticoP
         )}
         {pronostico.estado === "cargando" && <Esqueleto />}
         {pronostico.estado === "error" && (
-          <Mensaje>No pudimos cargar el pronóstico de los próximos días.</Mensaje>
+          <Mensaje>{MENSAJE_ERROR}</Mensaje>
         )}
       </div>
     </section>

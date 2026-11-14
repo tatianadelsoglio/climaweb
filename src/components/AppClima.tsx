@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import AnuncioEstado from "@/components/AnuncioEstado";
 import CampoBusqueda, { ID_CAMPO } from "@/components/CampoBusqueda";
 import AlertaUbicacion from "@/components/AlertaUbicacion";
+import { ID_AVISO_SIN_SOPORTE, MENSAJE_SIN_SOPORTE } from "@/components/BotonUbicacion";
 import Firma from "@/components/Firma";
 import Encabezado from "@/components/Encabezado";
 import PantallaCargando from "@/components/PantallaCargando";
@@ -176,6 +177,15 @@ export default function AppClima() {
 
       {(ubicacion.estado === "denegado" || ubicacion.estado === "no-disponible") && (
         <AlertaUbicacion tipo={ubicacion.estado} onCerrar={cerrarAvisoUbicacion} />
+      )}
+
+      {ubicacion.estado === "no-soportada" && (
+        <p
+          id={ID_AVISO_SIN_SOPORTE}
+          className="px-xl pt-sm text-caption text-fg-muted lg:px-gutter"
+        >
+          {MENSAJE_SIN_SOPORTE}
+        </p>
       )}
 
       <main ref={contenedorRef} tabIndex={-1} className="flex flex-1 flex-col outline-none">
