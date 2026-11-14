@@ -28,7 +28,7 @@ const HORA_INICIO_DIA = 6;
 const HORA_FIN_DIA = 20;
 
 /** Segundos transcurridos desde la medianoche local de la ciudad. */
-function segundosDelDiaLocal(instante: number, zonaHoraria: number): number {
+export function segundosDelDiaLocal(instante: number, zonaHoraria: number): number {
   const local = (instante + zonaHoraria) % SEGUNDOS_POR_DIA;
   return local < 0 ? local + SEGUNDOS_POR_DIA : local;
 }

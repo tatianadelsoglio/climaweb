@@ -1,5 +1,6 @@
 import { Droplets, Sunrise, Sunset, Wind, type LucideIcon } from "lucide-react";
 import ArcoSolar from "@/components/ArcoSolar";
+import { progresoSolar } from "@/lib/posicionSolar";
 import {
   formatearHoraLocal,
   formatearHumedad,
@@ -46,6 +47,7 @@ function HoraSolar({
 export default function PanelDatos({ clima }: PanelDatosProps) {
   const { zonaHoraria, amanecer, atardecer } = clima;
   const hayHorarioSolar = amanecer !== null && atardecer !== null;
+  const progreso = progresoSolar(clima);
 
   return (
     <section aria-label="Detalles" className="glass flex flex-col rounded-xl lg:rounded-2xl">
@@ -60,8 +62,24 @@ export default function PanelDatos({ clima }: PanelDatosProps) {
 
       {hayHorarioSolar && (
         <div className="flex flex-col gap-sm shadow-[inset_0_1px_0_var(--color-glass-line)] px-xl pt-inset pb-lg lg:px-2xl lg:pt-lg lg:pb-xl">
-          <ArcoSolar anchoDiseno={308} alto={70} className="h-[70px] w-full lg:hidden" />
-          <ArcoSolar anchoDiseno={472} alto={96} className="hidden h-24 w-full lg:block" />
+          <ArcoSolar
+            anchoDiseno={308}
+            alto={70}
+            radioPista={0.98}
+            radioProgreso={0.96}
+            radioSol={8}
+            progreso={progreso}
+            className="h-[70px] w-full lg:hidden"
+          />
+          <ArcoSolar
+            anchoDiseno={472}
+            alto={96}
+            radioPista={0.985}
+            radioProgreso={0.97}
+            radioSol={9}
+            progreso={progreso}
+            className="hidden h-24 w-full lg:block"
+          />
           <div className="flex justify-between">
             <HoraSolar
               icono={Sunrise}
