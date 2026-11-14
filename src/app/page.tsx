@@ -1,13 +1,5 @@
-import BuscadorClima from "@/components/BuscadorClima";
-import Encabezado from "@/components/Encabezado";
+import AppClima from "@/components/AppClima";
 
 export default function Home() {
-  return (
-    <>
-      <Encabezado titulo="Clima" />
-      <main className="flex-1">
-        <BuscadorClima />
-      </main>
-    </>
-  );
+  return <AppClima />;
 }

@@ -6,6 +6,8 @@ const bricolageGrotesque = Bricolage_Grotesque({
   variable: "--font-bricolage-grotesque",
   subsets: ["latin"],
   display: "swap",
+  // Eje de tamaño óptico: globals.css lo fija en 96, como en el diseño.
+  axes: ["opsz"],
 });
 
 const figtree = Figtree({
