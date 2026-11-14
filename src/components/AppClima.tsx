@@ -44,6 +44,9 @@ export default function AppClima() {
   const [textoEditado, setTexto] = useState<string | null>(null);
   const texto = textoEditado ?? (consultaInicial ? textoDeConsulta(consultaInicial) : "");
   const [errorCampo, setErrorCampo] = useState<string | null>(null);
+  // true si la última búsqueda lleva el foco al título del resultado: el anuncio en voz
+  // alta se resume para no repetir lo que el título ya dice.
+  const [focoEnTitulo, setFocoEnTitulo] = useState(false);
   // Sugerencia elegida y el texto que dejó en el campo: si se vuelve a buscar con
   // ese mismo texto (que no es una búsqueda válida por sí solo) se usa la elegida.
   const seleccionRef = useRef<{ texto: string; consulta: ConsultaCoordenadas } | null>(null);
@@ -60,7 +63,9 @@ export default function AppClima() {
   const origenDelFocoRef = useRef<Element | null>(null);
   const alObtenerUbicacion = useCallback(
     ({ lat, lon }: CoordenadasValidas) => {
-      if (document.activeElement === origenDelFocoRef.current) llevarFocoAlContenido();
+      const mueveFoco = document.activeElement === origenDelFocoRef.current;
+      setFocoEnTitulo(mueveFoco);
+      if (mueveFoco) llevarFocoAlContenido();
       setTexto("");
       seleccionRef.current = null;
       void buscar({ lat, lon, etiqueta: "tu ubicación" });
@@ -106,6 +111,7 @@ export default function AppClima() {
     const seleccion = seleccionRef.current;
     if (seleccion && seleccion.texto === texto) {
       setErrorCampo(null);
+      setFocoEnTitulo(false);
       void buscar(seleccion.consulta);
       return;
     }
@@ -115,12 +121,14 @@ export default function AppClima() {
       return;
     }
     setErrorCampo(null);
+    setFocoEnTitulo(false);
     void buscar(busqueda.datos);
   }
 
   function elegirCiudad({ nombre, busqueda }: CiudadSugerida) {
     ubicacion.cancelar();
     cambiarTexto(nombre);
+    setFocoEnTitulo(true);
     llevarFocoAlContenido();
     void buscar({ ...busqueda, nombre });
   }
@@ -132,11 +140,13 @@ export default function AppClima() {
     ubicacion.cancelar();
     cambiarTexto(textoElegido);
     autocompletado.cerrar();
+    setFocoEnTitulo(true);
     llevarFocoAlContenido();
     void buscar(consulta);
   }
 
   function reintentarBusqueda() {
+    setFocoEnTitulo(true);
     llevarFocoAlContenido();
     reintentar();
   }
@@ -208,7 +218,12 @@ export default function AppClima() {
 
       <Firma />
 
-      <AnuncioEstado resultado={resultado} unidad={unidad} estadoUbicacion={ubicacion.estado} />
+      <AnuncioEstado
+        resultado={resultado}
+        unidad={unidad}
+        estadoUbicacion={ubicacion.estado}
+        resumido={focoEnTitulo}
+      />
     </div>
   );
 }
