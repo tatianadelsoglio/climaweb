@@ -1,5 +1,14 @@
-// 2 decimales (~1 km): alcanza para el clima de una ciudad y hace que ubicaciones
-// cercanas compartan la misma URL (y, con ella, la misma entrada de caché).
+/*
+ * DECISIÓN ACEPTADA: las coordenadas se redondean a 2 decimales (~1,1 km) en TODA URL
+ * hacia nuestras rutas y hacia los proveedores (clima y pronóstico por ubicación).
+ * Consecuencias:
+ *  - Dos puntos a menos de ~1 km reciben la misma respuesta. Para el clima de una
+ *    ciudad es irrelevante (los modelos del pronóstico tienen celdas de varios km).
+ *  - Ubicaciones cercanas comparten URL y, con ella, la entrada de caché del CDN y de
+ *    Next: es lo que hace que la caché realmente acierte.
+ *  - La ubicación exacta de la persona no viaja ni queda en los logs (privacidad).
+ * Si algún día hiciera falta más precisión, cambiar solo esta constante.
+ */
 const DECIMALES_URL = 2;
 
 /**

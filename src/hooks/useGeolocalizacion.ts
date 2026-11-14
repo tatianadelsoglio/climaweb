@@ -24,8 +24,8 @@ function haySoporte(): boolean {
 const TIMEOUT_MS = 10_000;
 // Una posición de hace menos de 5 minutos alcanza para saber en qué ciudad está.
 const EDAD_MAXIMA_MS = 300_000;
-// 2 decimales (~1 km): alcanza para el clima de una ciudad y no deja la posición
-// casi exacta en la URL (logs del hosting y del proveedor).
+// 2 decimales (~1,1 km), igual que formatearCoordenada: decisión aceptada, ver
+// lib/coordenadas.ts. No deja la posición casi exacta en la URL ni en los logs.
 const DECIMALES = 2;
 
 function redondear(grados: number): number {
