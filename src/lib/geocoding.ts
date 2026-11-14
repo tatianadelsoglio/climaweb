@@ -44,6 +44,17 @@ function sugerenciaDeOpenWeather(item: unknown): Sugerencia | null {
 }
 
 /**
+ * Sugerencias que corresponden a la búsqueda actual (`clave`): las de una
+ * búsqueda anterior, o las que quedaron de un texto que ya cambió, no valen.
+ */
+export function sugerenciasVigentes(
+  respuesta: { clave: string; sugerencias: Sugerencia[] } | null,
+  clave: string | null,
+): Sugerencia[] {
+  return clave !== null && respuesta?.clave === clave ? respuesta.sugerencias : [];
+}
+
+/**
  * Respuesta de /geo/1.0/direct → sugerencias. Descarta los elementos inválidos
  * y los repetidos (mismo nombre, estado y país, o mismas coordenadas: la API
  * a veces devuelve el mismo lugar dos veces, también con otro nombre) y

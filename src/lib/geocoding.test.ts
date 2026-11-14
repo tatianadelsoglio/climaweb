@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { LIMITE_SUGERENCIAS, normalizarGeocoding } from "./geocoding.ts";
+import {
+  LIMITE_SUGERENCIAS,
+  normalizarGeocoding,
+  sugerenciasVigentes,
+} from "./geocoding.ts";
 
 const cordoba = {
   name: "Cordoba",
@@ -101,5 +105,23 @@ describe("normalizarGeocoding", () => {
   it("una respuesta que no es lista da un arreglo vacío", () => {
     assert.deepEqual(normalizarGeocoding(null), []);
     assert.deepEqual(normalizarGeocoding({ cod: 401 }), []);
+  });
+});
+
+describe("sugerenciasVigentes", () => {
+  const santiago = { nombre: "Santiago", estado: null, pais: "CL", lat: -33.4, lon: -70.6 };
+  const respuesta = { clave: "Sant|", sugerencias: [santiago] };
+
+  it("devuelve las sugerencias de la búsqueda actual", () => {
+    assert.deepEqual(sugerenciasVigentes(respuesta, "Sant|"), [santiago]);
+  });
+
+  it("al escribir más, las de la clave anterior ya no valen (Enter no las elige)", () => {
+    assert.deepEqual(sugerenciasVigentes(respuesta, "Santa Fe|"), []);
+  });
+
+  it("sin clave (texto corto) o sin respuesta no hay sugerencias", () => {
+    assert.deepEqual(sugerenciasVigentes(respuesta, null), []);
+    assert.deepEqual(sugerenciasVigentes(null, "Sant|"), []);
   });
 });

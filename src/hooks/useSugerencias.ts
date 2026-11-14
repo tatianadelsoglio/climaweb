@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DEMORA_SUGERENCIAS_MS, MINIMO_CARACTERES } from "@/lib/geocoding";
+import {
+  DEMORA_SUGERENCIAS_MS,
+  MINIMO_CARACTERES,
+  sugerenciasVigentes,
+} from "@/lib/geocoding";
 import type { BusquedaTexto } from "@/lib/parsearBusqueda";
 import type { Sugerencia } from "@/types/geocoding";
 
@@ -39,7 +43,7 @@ async function pedirSugerencias(
 /**
  * Sugerencias de lugares para lo escrito. Espera `demoraMs` sin cambios antes
  * de pedirlas, exige un mínimo de caracteres y cancela con AbortController la
- * búsqueda anterior. Si falla, no hay sugerencias: la búsqueda por texto sigue
+ * búsqueda anterior; mientras llega la nueva no hay sugerencias. Si falla, no hay sugerencias: la búsqueda por texto sigue
  * funcionando. Con `busqueda` en null no hace nada.
  */
 export function useSugerencias(
@@ -53,15 +57,6 @@ export function useSugerencias(
   const [respuesta, setRespuesta] = useState<{ clave: string; sugerencias: Sugerencia[] } | null>(
     null,
   );
-  const [claveAnterior, setClaveAnterior] = useState(clave);
-
-  // Al bajar del mínimo se descartan las sugerencias viejas (patrón de React para
-  // ajustar estado durante el render); mientras llegan las nuevas se conservan las
-  // anteriores para que la lista no parpadee en cada letra.
-  if (claveAnterior !== clave) {
-    setClaveAnterior(clave);
-    if (clave === null) setRespuesta(null);
-  }
 
   useEffect(() => {
     if (clave === null) return;
@@ -81,8 +76,10 @@ export function useSugerencias(
     };
   }, [clave, ciudad, pais, demoraMs]);
 
+  // Al escribir, la respuesta anterior deja de valer en el acto: nunca se muestra
+  // (ni se puede elegir con Enter) una sugerencia que no corresponde al texto actual.
   return {
-    sugerencias: clave === null ? [] : (respuesta?.sugerencias ?? []),
+    sugerencias: sugerenciasVigentes(respuesta, clave),
     cargando: clave !== null && respuesta?.clave !== clave,
   };
 }
