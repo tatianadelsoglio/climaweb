@@ -13,10 +13,11 @@ const ANIO = 2026;
  */
 const ICONO = "/brand/tamade-icon-white.png";
 
-// Subrayado tenue siempre visible (un link no puede distinguirse solo por color: el
-// texto del pie y sus links comparten color) y pleno en hover y foco.
+// Subrayado siempre visible (un link no puede distinguirse solo por color: el texto
+// del pie y sus links comparten color) y pleno en hover y foco. Al 70 % el subrayado
+// da ≥ 3,7:1 contra el fondo en los 8 cielos (al 40 % daba 2,2:1; WCAG 1.4.11 pide 3:1).
 const CLASE_LINK =
-  "underline decoration-fg-muted/40 underline-offset-2 hover:decoration-fg focus-visible:decoration-fg";
+  "underline decoration-fg-muted/70 underline-offset-2 hover:decoration-fg focus-visible:decoration-fg";
 
 function LinkExterno({ href, children }: { href: string; children: string }) {
   return (
