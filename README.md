@@ -31,7 +31,7 @@
 - **Cielos dinámicos**: 8 cielos (despejado, nublado, lluvia, tormenta, nieve, neblina; los dos primeros en versión día y noche) según la condición y la hora local **de la ciudad buscada**, no la del dispositivo.
 - **Pronóstico de 7 días** con probabilidad de lluvia, mínima y máxima.
 - **°C / °F**, y la unidad elegida se recuerda en el navegador.
-- **Accesibilidad pensada para WCAG 2.1 AA**: contrastes verificados contra los 8 cielos, foco visible, áreas táctiles de 44 px o más, combobox con ARIA y región `aria-live` para anunciar resultados.
+- **Accesibilidad pensada para WCAG 2.1 AA**: contrastes verificados contra los 8 cielos, foco visible, áreas táctiles de 44 px o más en los controles principales, combobox con ARIA y región `aria-live` para anunciar resultados.
 
 <img src="docs/screenshots/autocompletado.webp" alt="Buscador con la palabra «San» escrita y una lista de cinco ciudades sugeridas, con el prefijo resaltado y las teclas de atajo al pie." width="560">
 
@@ -186,7 +186,7 @@ Lo que todavía no está hecho:
 - **Dynamic skies**: 8 skies (clear, cloudy, rain, storm, snow, mist; the first two in day and night versions) driven by the condition and the local time **of the searched city**, not the device's.
 - **7-day forecast** with chance of rain, minimum and maximum.
 - **°C / °F**, and the chosen unit is remembered in the browser.
-- **Accessibility designed for WCAG 2.1 AA**: contrast checked against all 8 skies, visible focus, touch targets of 44 px or more, an ARIA combobox and an `aria-live` region to announce results.
+- **Accessibility designed for WCAG 2.1 AA**: contrast checked against all 8 skies, visible focus, touch targets of 44 px or more on the main controls, an ARIA combobox and an `aria-live` region to announce results.
 
 <img src="docs/screenshots/autocompletado.webp" alt="Search box with the text “San” typed and a list of five suggested cities, with the prefix highlighted and keyboard shortcuts at the bottom." width="560">
 
