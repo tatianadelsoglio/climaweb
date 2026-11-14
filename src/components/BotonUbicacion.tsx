@@ -8,6 +8,7 @@ interface BotonUbicacionProps {
 }
 
 const ETIQUETA = "Usar mi ubicación";
+export const MENSAJE_SIN_SOPORTE = "Tu navegador no permite usar la ubicación.";
 
 const CLASES: Record<BotonUbicacionProps["variante"], { boton: string; icono: string; etiqueta: string }> = {
   encabezado: {
@@ -26,25 +27,28 @@ const CLASES: Record<BotonUbicacionProps["variante"], { boton: string; icono: st
 
 /**
  * Pide la ubicación del dispositivo. Mientras busca muestra un indicador y no
- * admite otro pedido; con la ubicación no disponible el botón del encabezado se
- * atenúa, como en el diseño, pero se puede volver a intentar.
+ * admite otro pedido. Si el navegador no tiene geolocalización queda deshabilitado
+ * de verdad; si el error fue temporal (permiso denegado, sin señal), sigue habilitado
+ * y con opacidad normal para poder reintentar.
  */
 export default function BotonUbicacion({ variante, estado, onUbicar }: BotonUbicacionProps) {
   const clases = CLASES[variante];
   const buscando = estado === "buscando";
   const Icono = buscando ? LoaderCircle : LocateFixed;
-  const atenuado = variante === "encabezado" && estado === "no-disponible";
+  const sinSoporte = estado === "no-soportada";
 
   return (
     <button
       type="button"
       onClick={onUbicar}
-      disabled={buscando}
+      disabled={buscando || sinSoporte}
       aria-busy={buscando}
-      className={`${clases.boton} disabled:cursor-wait ${atenuado ? "opacity-50" : ""}`}
+      title={sinSoporte ? MENSAJE_SIN_SOPORTE : undefined}
+      className={`${clases.boton} ${buscando ? "cursor-wait" : ""} ${sinSoporte ? "cursor-not-allowed opacity-50" : ""}`}
     >
       <Icono aria-hidden className={`${clases.icono} ${buscando ? "animate-spin" : ""}`} />
       <span className={clases.etiqueta}>{ETIQUETA}</span>
+      {sinSoporte && <span className="sr-only"> ({MENSAJE_SIN_SOPORTE})</span>}
     </button>
   );
 }

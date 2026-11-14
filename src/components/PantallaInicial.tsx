@@ -1,7 +1,7 @@
 "use client";
 
 import { Sun } from "lucide-react";
-import BotonUbicacion from "@/components/BotonUbicacion";
+import BotonUbicacion, { MENSAJE_SIN_SOPORTE } from "@/components/BotonUbicacion";
 import ChipCiudad from "@/components/ChipCiudad";
 import type { EstadoUbicacion } from "@/hooks/useGeolocalizacion";
 import { useFechaHoy } from "@/hooks/useFechaHoy";
@@ -64,7 +64,12 @@ export default function PantallaInicial({
       </p>
 
       <div className="flex flex-col gap-xl lg:flex-row lg:items-center lg:gap-lg lg:pt-sm">
-        <BotonUbicacion variante="primario" estado={estadoUbicacion} onUbicar={onUbicar} />
+        <div className="flex flex-col gap-sm lg:max-w-[260px]">
+          <BotonUbicacion variante="primario" estado={estadoUbicacion} onUbicar={onUbicar} />
+          {estadoUbicacion === "no-soportada" && (
+            <p className="text-caption text-fg-muted">{MENSAJE_SIN_SOPORTE} Buscá tu ciudad.</p>
+          )}
+        </div>
 
         <div className="flex flex-col gap-field pt-sm lg:flex-row lg:items-center lg:gap-lg lg:pt-0">
           <p className="text-caption text-fg-muted lg:text-body">o probá con</p>
