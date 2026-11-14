@@ -111,15 +111,30 @@ describe("agruparPorDiaLocal", () => {
     assert.ok(dias.every((d) => d.fecha > "2026-11-14"));
   });
 
-  it("descarta un último día con muy pocas franjas", () => {
-    // 4 días completos (32 franjas) + 2 franjas del quinto.
-    const dias = agruparPorDiaLocal(franjas(PRIMERA_FRANJA, 2 + 8 * 4 + 2, CORDOBA), CORDOBA, MOMENTO);
-    assert.equal(dias.length, 4);
+  it("el último día sale con las franjas que haya, aunque sea una sola", () => {
+    // 4 días completos (32 franjas) + 2 de hoy + 1 del quinto.
+    const todas = franjas(PRIMERA_FRANJA, 2 + 8 * 4 + 1, CORDOBA);
+    const dias = agruparPorDiaLocal(todas, CORDOBA, MOMENTO);
+    assert.equal(dias.length, 5);
+    assert.equal(dias[4].fecha, "2026-11-19");
+    assert.equal(dias[4].codigo, todas.at(-1)?.codigo);
   });
 
-  it("conserva un último día parcial si tiene franjas suficientes", () => {
-    const dias = agruparPorDiaLocal(franjas(PRIMERA_FRANJA, 40, CORDOBA), CORDOBA, MOMENTO);
-    assert.equal(dias.length, 5);
+  it("con las 40 franjas de la API siempre hay 5 días, a cualquier hora local", () => {
+    // La API arranca en la próxima franja de 3 h: probamos las 8 posibles y varios husos.
+    for (const zona of [CORDOBA, TOKIO, 0, 5.5 * 3600, -9.5 * 3600]) {
+      for (let hora = 0; hora < 24; hora++) {
+        const momento = Date.UTC(2026, 10, 14, hora, 20) / 1000 - zona + 0;
+        // Primera franja: la siguiente hora local múltiplo de 3 a partir de "ahora".
+        const localAhora = (momento + zona) % 86_400;
+        const siguiente = Math.ceil((localAhora + 1) / 10_800) * 10_800;
+        const inicio = momento + (siguiente - localAhora);
+        const dias = agruparPorDiaLocal(franjas(inicio, 40, zona), zona, momento);
+        assert.equal(dias.length, 5, `huso ${zona}, hora local ${hora}:20`);
+        for (let i = 1; i < dias.length; i++) assert.ok(dias[i].fecha > dias[i - 1].fecha);
+        assert.ok(dias.every((d) => d.fecha > claveDiaLocal(momento, zona)));
+      }
+    }
   });
 
   it("sin franjas no hay días", () => {

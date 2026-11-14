@@ -14,8 +14,6 @@ export interface FranjaPronostico {
 }
 
 export const DIAS_PRONOSTICO = 5;
-/** Un último día con menos franjas que estas está demasiado incompleto para mostrarlo. */
-const FRANJAS_MINIMAS_ULTIMO_DIA = 3;
 const SEGUNDOS_POR_DIA = 86_400;
 const SEGUNDOS_POR_HORA = 3_600;
 const HORA_REPRESENTATIVA = 12;
@@ -90,8 +88,10 @@ function franjaDelMediodia(franjas: FranjaPronostico[], zonaHoraria: number) {
  * Agrupa las franjas por día LOCAL de la ciudad (con su huso, no el del
  * usuario ni UTC) y arma los próximos días, sin contar hoy: mínima y máxima del
  * día, ícono de la franja más cercana al mediodía y la mayor probabilidad de
- * lluvia. La API cubre 5 días desde ahora, así que el último puede venir
- * incompleto: si tiene muy pocas franjas se descarta.
+ * lluvia. La API manda 40 franjas (5 días desde ahora), así que además de los 5
+ * días siguientes completos, el último puede venir parcial: se arma igual con las
+ * franjas que haya, para que siempre sean 5 días. Un día parcial puede carecer de
+ * franja de mediodía; entonces el ícono sale de la más cercana a esa hora.
  */
 export function agruparPorDiaLocal(
   franjas: FranjaPronostico[],
@@ -111,9 +111,6 @@ export function agruparPorDiaLocal(
   const dias = [...porDia.entries()]
     .sort(([a], [b]) => (a < b ? -1 : 1))
     .slice(0, DIAS_PRONOSTICO);
-
-  const ultimo = dias.at(-1);
-  if (ultimo && ultimo[1].length < FRANJAS_MINIMAS_ULTIMO_DIA) dias.pop();
 
   return dias.map(([fecha, delDia]) => {
     const representativa = franjaDelMediodia(delDia, zonaHoraria);
