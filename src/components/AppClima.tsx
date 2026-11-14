@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import AnuncioEstado from "@/components/AnuncioEstado";
 import CampoBusqueda from "@/components/CampoBusqueda";
 import AlertaUbicacion from "@/components/AlertaUbicacion";
+import Firma from "@/components/Firma";
 import Encabezado from "@/components/Encabezado";
 import PantallaCargando from "@/components/PantallaCargando";
 import PantallaError from "@/components/PantallaError";
@@ -183,6 +184,8 @@ export default function AppClima() {
           />
         )}
       </main>
+
+      <Firma />
 
       <AnuncioEstado resultado={resultado} unidad={unidad} estadoUbicacion={ubicacion.estado} />
     </div>
