@@ -66,11 +66,11 @@ export function leerConsultaGuardada(texto: string | null): ConsultaClima | null
     : validacion.datos;
 }
 
-/** Lo que se muestra en el buscador al restaurar: «Córdoba, Argentina». */
+/** Lo que se muestra en el buscador al restaurar: «Córdoba, Argentina» (país con su nombre completo). */
 export function textoDeConsulta(consulta: ConsultaClima): string {
   if ("lat" in consulta) {
     return consulta.pais ? `${consulta.etiqueta}, ${nombrePais(consulta.pais)}` : consulta.etiqueta;
   }
   const ciudad = consulta.nombre ?? consulta.ciudad;
-  return consulta.pais ? `${ciudad}, ${consulta.pais}` : ciudad;
+  return consulta.pais ? `${ciudad}, ${nombrePais(consulta.pais)}` : ciudad;
 }

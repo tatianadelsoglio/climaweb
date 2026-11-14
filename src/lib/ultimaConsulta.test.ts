@@ -83,7 +83,11 @@ describe("leerConsultaGuardada", () => {
 describe("textoDeConsulta", () => {
   it("arma el texto del buscador", () => {
     assert.equal(textoDeConsulta({ ciudad: "Madrid" }), "Madrid");
-    assert.equal(textoDeConsulta({ ciudad: "Madrid", pais: "ES" }), "Madrid, ES");
+    assert.equal(textoDeConsulta({ ciudad: "Madrid", pais: "ES" }), "Madrid, España");
+    assert.equal(
+      textoDeConsulta({ ciudad: "Tokio", pais: "JP", nombre: "Tokio" }),
+      "Tokio, Japón",
+    );
     assert.equal(textoDeConsulta(NUEVA_YORK), "Nueva York, Estados Unidos");
   });
 });
