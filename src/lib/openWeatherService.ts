@@ -1,3 +1,4 @@
+import { formatearCoordenada } from "@/lib/coordenadas";
 import { OpenWeatherError, pedirJson } from "@/lib/openWeatherHttp";
 import {
   agruparPorDiaLocal,
@@ -99,8 +100,8 @@ export type UbicacionClima = BusquedaValida | CoordenadasValidas;
 function urlDe(base: string, ubicacion: UbicacionClima, apiKey: string): URL {
   const url = new URL(base);
   if ("lat" in ubicacion) {
-    url.searchParams.set("lat", String(ubicacion.lat));
-    url.searchParams.set("lon", String(ubicacion.lon));
+    url.searchParams.set("lat", formatearCoordenada(ubicacion.lat));
+    url.searchParams.set("lon", formatearCoordenada(ubicacion.lon));
   } else {
     const { ciudad, pais } = ubicacion;
     url.searchParams.set("q", pais ? `${ciudad},${pais}` : ciudad);

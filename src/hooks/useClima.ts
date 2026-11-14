@@ -7,6 +7,7 @@ import {
   resolverCielo,
   type Cielo,
 } from "@/lib/resolverCielo";
+import { formatearCoordenada } from "@/lib/coordenadas";
 import { CLAVE_ULTIMA_CONSULTA, consultaParaGuardar } from "@/lib/ultimaConsulta";
 import { guardarAlmacenado } from "@/lib/almacenamiento";
 import type {
@@ -28,7 +29,10 @@ export function etiquetaDeConsulta(consulta: ConsultaClima): string {
 
 function parametrosDe(consulta: ConsultaClima): URLSearchParams {
   if (esPorCoordenadas(consulta)) {
-    return new URLSearchParams({ lat: String(consulta.lat), lon: String(consulta.lon) });
+    return new URLSearchParams({
+      lat: formatearCoordenada(consulta.lat),
+      lon: formatearCoordenada(consulta.lon),
+    });
   }
   const params = new URLSearchParams({ ciudad: consulta.ciudad });
   if (consulta.pais) params.set("pais", consulta.pais);
