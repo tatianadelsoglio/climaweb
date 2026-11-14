@@ -9,12 +9,17 @@ import PantallaError from "@/components/PantallaError";
 import PantallaInicial, { type CiudadSugerida } from "@/components/PantallaInicial";
 import PantallaResultado from "@/components/PantallaResultado";
 import { useClima } from "@/hooks/useClima";
+import { useFocoEnContenido } from "@/hooks/useFocoEnContenido";
 import { interpretarBusqueda } from "@/lib/parsearBusqueda";
 
 export default function AppClima() {
   const { resultado, buscar, reintentar } = useClima();
   const [texto, setTexto] = useState("");
   const [errorCampo, setErrorCampo] = useState<string | null>(null);
+  const { contenedorRef, llevarFocoAlContenido } = useFocoEnContenido(
+    resultado.estado,
+    resultado.estado === "exito" || resultado.estado === "error",
+  );
 
   function cambiarTexto(valor: string) {
     setTexto(valor);
@@ -33,7 +38,13 @@ export default function AppClima() {
 
   function elegirCiudad({ nombre, busqueda }: CiudadSugerida) {
     cambiarTexto(nombre);
+    llevarFocoAlContenido();
     void buscar(busqueda);
+  }
+
+  function reintentarBusqueda() {
+    llevarFocoAlContenido();
+    reintentar();
   }
 
   const ciudadInexistente = resultado.estado === "error" && resultado.tipo === "ciudad";
@@ -55,7 +66,7 @@ export default function AppClima() {
         }
       />
 
-      <main className="flex flex-1 flex-col">
+      <main ref={contenedorRef} tabIndex={-1} className="flex flex-1 flex-col outline-none">
         {resultado.estado === "inicial" && <PantallaInicial onElegirCiudad={elegirCiudad} />}
         {resultado.estado === "cargando" && <PantallaCargando consulta={resultado.consulta} />}
         {resultado.estado === "exito" && (
@@ -65,7 +76,7 @@ export default function AppClima() {
           <PantallaError
             tipo={resultado.tipo}
             consulta={resultado.consulta}
-            onReintentar={reintentar}
+            onReintentar={reintentarBusqueda}
           />
         )}
       </main>

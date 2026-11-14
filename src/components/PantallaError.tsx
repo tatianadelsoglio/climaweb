@@ -26,7 +26,7 @@ export default function PantallaError({ tipo, consulta, onReintentar }: Pantalla
         {esCiudad ? "Sin resultados" : "Error del servicio"}
       </p>
 
-      <h1 className="font-display text-heading-sm leading-[1.05] font-semibold tracking-[-1px] break-words lg:w-[760px] lg:max-w-full lg:text-display lg:leading-[1.02] lg:tracking-[-1.5px]">
+      <h1 tabIndex={-1} className="outline-none font-display text-heading-sm leading-[1.05] font-semibold tracking-[-1px] break-words lg:w-[760px] lg:max-w-full lg:text-display lg:leading-[1.02] lg:tracking-[-1.5px]">
         {esCiudad ? `No encontramos “${consulta}”.` : "Hoy el servicio del clima está nublado."}
       </h1>
 

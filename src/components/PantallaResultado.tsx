@@ -47,7 +47,7 @@ export default function PantallaResultado({ clima, cielo }: PantallaResultadoPro
           className="flex min-w-0 flex-col gap-2xs lg:flex-1 lg:justify-between lg:gap-0"
         >
           <div className="flex flex-col gap-2xs lg:gap-sm">
-            <h1 id="titulo-ciudad" className="flex items-center gap-xs lg:gap-sm">
+            <h1 tabIndex={-1} id="titulo-ciudad" className="outline-none flex items-center gap-xs lg:gap-sm">
               <MapPin aria-hidden className="size-[18px] shrink-0 text-accent lg:size-5" />
               <span className="font-display text-subtitle font-semibold lg:text-title">
                 {clima.ciudad}, {nombrePais(clima.pais)}
