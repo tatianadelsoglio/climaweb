@@ -20,9 +20,9 @@
 
 **Demo: <https://atmosfera-psi.vercel.app/>**
 
-<img src="docs/screenshots/desktop-resultado.webp" alt="Atmósfera en escritorio: resultado para Buenos Aires de noche, con 24°, pocas nubes, humedad, viento, arco solar y pronóstico de 7 días sobre un cielo azul oscuro." width="720">
+<img src="docs/screenshots/desktop-resultado.webp" alt="Atmósfera en escritorio: resultado para Sídney de día, con 18°, mayormente nublado, humedad, viento, arco solar con el sol a media mañana y pronóstico de 7 días sobre un cielo azul con acentos cálidos." width="720">
 
-<img src="docs/screenshots/mobile-resultado.webp" alt="Atmósfera en celular: temperatura grande, condición, panel de humedad, viento y lluvia, arco solar y comienzo del pronóstico de 7 días." width="260">
+<img src="docs/screenshots/mobile-resultado.webp" alt="Atmósfera en celular: Sídney de día, con temperatura grande, condición, panel de humedad, viento y lluvia, arco solar y comienzo del pronóstico de 7 días sobre un cielo azul." width="260">
 
 ### Qué hace
 
@@ -178,9 +178,9 @@ Lo que todavía no está hecho:
 
 **Demo: <https://atmosfera-psi.vercel.app/>** (the interface is in Spanish)
 
-<img src="docs/screenshots/desktop-resultado.webp" alt="Atmósfera on desktop: result for Buenos Aires at night, showing 24°, few clouds, humidity, wind, a sun arc and a 7-day forecast over a dark blue sky." width="720">
+<img src="docs/screenshots/desktop-resultado.webp" alt="Atmósfera on desktop: result for Sydney by day, showing 18°, mostly cloudy, humidity, wind, a sun arc with the sun at mid-morning and a 7-day forecast over a blue sky with warm accents." width="720">
 
-<img src="docs/screenshots/mobile-resultado.webp" alt="Atmósfera on mobile: large temperature, condition, humidity, wind and rain panel, sun arc and the start of the 7-day forecast." width="260">
+<img src="docs/screenshots/mobile-resultado.webp" alt="Atmósfera on mobile: Sydney by day, with large temperature, condition, humidity, wind and rain panel, sun arc and the start of the 7-day forecast over a blue sky." width="260">
 
 ### What it does
 
