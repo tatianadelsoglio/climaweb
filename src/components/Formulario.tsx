@@ -46,7 +46,7 @@ export default function Formulario({ cargando, onBuscar }: FormularioProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
       {error && <div id="error-formulario"><MensajeError mensaje="Ambos campos son obligatorios" /></div>}
 
       <div className="flex flex-col gap-1">
