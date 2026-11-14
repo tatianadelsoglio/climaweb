@@ -18,7 +18,9 @@ const CARGANDO: EstadoPronostico = { estado: "cargando" };
  * cuando llega el clima, con las coordenadas que resolvió el proveedor, y se
  * cancela si cambia el clima. El clima actual se muestra sin esperarlo: si el
  * pronóstico falla, solo su panel pasa a estado de error. «Hoy» se identifica por
- * fecha local de la ciudad (ver separarHoy), no por posición.
+ * fecha local de la ciudad (ver separarHoy), no por posición, y con la hora del
+ * cliente al llegar la respuesta: clima.momento es la del servidor y puede venir de
+ * una respuesta cacheada (hasta 15 min) con el día anterior.
  */
 export function usePronostico(clima: ClimaActual | null): EstadoPronostico {
   const [respuesta, setRespuesta] = useState<{
@@ -29,7 +31,7 @@ export function usePronostico(clima: ClimaActual | null): EstadoPronostico {
   useEffect(() => {
     if (!clima) return;
     const controlador = new AbortController();
-    const { momento, zonaHoraria } = clima;
+    const { zonaHoraria } = clima;
     const params = new URLSearchParams({
       lat: formatearCoordenada(clima.coordenadas.lat),
       lon: formatearCoordenada(clima.coordenadas.lon),
@@ -41,7 +43,7 @@ export function usePronostico(clima: ClimaActual | null): EstadoPronostico {
       });
       const datos: unknown = await respuestaHttp.json().catch(() => null);
       return respuestaHttp.ok && esRespuestaPronostico(datos)
-        ? { estado: "listo", ...separarHoy(datos.dias, momento, zonaHoraria) }
+        ? { estado: "listo", ...separarHoy(datos.dias, Date.now() / 1000, zonaHoraria) }
         : { estado: "error" };
     }
 
