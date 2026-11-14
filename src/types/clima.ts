@@ -10,7 +10,12 @@ export interface ConsultaCoordenadas extends CoordenadasValidas {
   pais?: string;
 }
 
-export type ConsultaClima = BusquedaValida | ConsultaCoordenadas;
+/** Consulta por ciudad; `nombre` es cómo se la muestra («Tokio», no el «Tokyo» del proveedor). */
+export interface ConsultaCiudad extends BusquedaValida {
+  nombre?: string;
+}
+
+export type ConsultaClima = ConsultaCiudad | ConsultaCoordenadas;
 
 /** Un día del pronóstico, agrupado por día local de la ciudad. Celsius. */
 export interface DiaPronostico {

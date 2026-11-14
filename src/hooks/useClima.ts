@@ -35,9 +35,11 @@ function parametrosDe(consulta: ConsultaClima): URLSearchParams {
   return params;
 }
 
-/** El nombre elegido en el autocompletado (en español) pesa más que el del proveedor. */
+/** El nombre elegido (en español) pesa más que el del proveedor. */
 function conNombreElegido(clima: ClimaActual, consulta: ConsultaClima): ClimaActual {
-  if (!esPorCoordenadas(consulta)) return clima;
+  if (!esPorCoordenadas(consulta)) {
+    return consulta.nombre ? { ...clima, ciudad: consulta.nombre } : clima;
+  }
   return {
     ...clima,
     ciudad: consulta.nombre ?? clima.ciudad,

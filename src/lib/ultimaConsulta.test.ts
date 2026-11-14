@@ -51,6 +51,14 @@ describe("leerConsultaGuardada", () => {
     assert.deepEqual(leerConsultaGuardada(JSON.stringify({ ciudad: "Madrid" })), { ciudad: "Madrid" });
   });
 
+  it("restaura el nombre con que se mostró una búsqueda por ciudad", () => {
+    const guardada = { ciudad: "Tokio", pais: "JP", nombre: "Tokio" };
+    assert.deepEqual(leerConsultaGuardada(JSON.stringify(guardada)), guardada);
+    assert.deepEqual(leerConsultaGuardada(JSON.stringify({ ciudad: "Tokio", nombre: 5 })), {
+      ciudad: "Tokio",
+    });
+  });
+
   it("restaura una consulta por coordenadas", () => {
     assert.deepEqual(leerConsultaGuardada(JSON.stringify(NUEVA_YORK)), NUEVA_YORK);
   });

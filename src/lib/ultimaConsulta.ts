@@ -4,6 +4,7 @@ import { validarBusqueda } from "./validarBusqueda.ts";
 import type { ConsultaClima } from "../types/clima.ts";
 
 export const CLAVE_ULTIMA_CONSULTA = "atmosfera:ultima-consulta";
+const NOMBRE_MAX = 100;
 
 function esObjeto(valor: unknown): valor is Record<string, unknown> {
   return typeof valor === "object" && valor !== null;
@@ -58,7 +59,11 @@ export function leerConsultaGuardada(texto: string | null): ConsultaClima | null
   const ciudad = typeof datos.ciudad === "string" ? datos.ciudad : null;
   const pais = typeof datos.pais === "string" ? datos.pais : null;
   const validacion = validarBusqueda(ciudad, pais);
-  return validacion.valida ? validacion.datos : null;
+  if (!validacion.valida) return null;
+  const nombre = typeof datos.nombre === "string" ? datos.nombre.trim() : "";
+  return nombre !== "" && nombre.length <= NOMBRE_MAX
+    ? { ...validacion.datos, nombre }
+    : validacion.datos;
 }
 
 /** Lo que se muestra en el buscador al restaurar: «Córdoba, Argentina». */
@@ -66,5 +71,6 @@ export function textoDeConsulta(consulta: ConsultaClima): string {
   if ("lat" in consulta) {
     return consulta.pais ? `${consulta.etiqueta}, ${nombrePais(consulta.pais)}` : consulta.etiqueta;
   }
-  return consulta.pais ? `${consulta.ciudad}, ${consulta.pais}` : consulta.ciudad;
+  const ciudad = consulta.nombre ?? consulta.ciudad;
+  return consulta.pais ? `${ciudad}, ${consulta.pais}` : ciudad;
 }

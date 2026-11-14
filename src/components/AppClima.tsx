@@ -106,7 +106,7 @@ export default function AppClima() {
     ubicacion.cancelar();
     cambiarTexto(nombre);
     llevarFocoAlContenido();
-    void buscar(busqueda);
+    void buscar({ ...busqueda, nombre });
   }
 
   function elegirSugerencia(sugerencia: Sugerencia) {
