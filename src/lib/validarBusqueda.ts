@@ -8,13 +8,15 @@ const CIUDAD_MAX = 100;
 // Letras (con acentos), espacios, apóstrofes, puntos y guiones.
 const CIUDAD_REGEX = /^[\p{L}][\p{L}' .-]*$/u;
 const PAIS_REGEX = /^[A-Za-z]{2}$/;
+const APOSTROFES_TIPOGRAFICOS = /[‘’ʼ]/g;
 
 /** Devuelve la búsqueda normalizada o un mensaje de error. */
 export function validarBusqueda(
   ciudad: string | null,
   pais: string | null,
 ): { valida: true; datos: BusquedaValida } | { valida: false; mensaje: string } {
-  const ciudadLimpia = ciudad?.trim() ?? "";
+  // Los teclados de iOS con puntuación inteligente escriben ’ (U+2019) en lugar de '.
+  const ciudadLimpia = (ciudad ?? "").replace(APOSTROFES_TIPOGRAFICOS, "'").trim();
   const paisLimpio = pais?.trim() ?? "";
 
   if (ciudadLimpia === "") {

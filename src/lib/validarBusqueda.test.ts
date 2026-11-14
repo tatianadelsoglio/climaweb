@@ -60,6 +60,23 @@ describe("validarBusqueda", () => {
   });
 });
 
+describe("validarBusqueda con apóstrofes tipográficos", () => {
+  it("normaliza ’ (iOS) al apóstrofe recto", () => {
+    assert.deepEqual(validarBusqueda("L’Aquila", "IT"), {
+      valida: true,
+      datos: { ciudad: "L'Aquila", pais: "IT" },
+    });
+    assert.deepEqual(validarBusqueda("O‘Higgins", null), {
+      valida: true,
+      datos: { ciudad: "O'Higgins" },
+    });
+  });
+
+  it("el apóstrofe recto sigue valiendo", () => {
+    assert.equal(validarBusqueda("L'Aquila", null).valida, true);
+  });
+});
+
 describe("validarCoordenadas", () => {
   it("acepta coordenadas válidas", () => {
     assert.deepEqual(validarCoordenadas("-31.42", "-64.18"), {
