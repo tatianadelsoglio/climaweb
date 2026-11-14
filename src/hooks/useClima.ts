@@ -81,6 +81,7 @@ function esClimaActual(datos: unknown): datos is ClimaActual {
     esNumeroONulo(datos.atardecer) &&
     esNumero(datos.zonaHoraria) &&
     esNumero(datos.momento) &&
+    esNumeroONulo(datos.probabilidadLluvia) &&
     esPronosticoValido(datos.pronostico)
   );
 }

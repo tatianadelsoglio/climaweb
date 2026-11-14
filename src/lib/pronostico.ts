@@ -127,3 +127,58 @@ export function agruparPorDiaLocal(
     };
   });
 }
+
+export interface ResumenDeHoy {
+  minima: number;
+  maxima: number;
+  /** De 0 a 100; null si no hay franjas para estimarla. */
+  probabilidadLluvia: number | null;
+}
+
+interface DatosDeHoy {
+  /** Temperatura actual, Celsius. */
+  temperatura: number;
+  /**
+   * Respaldo para cuando no quedan franjas hoy: el rango entre estaciones que
+   * informa el clima actual (temp_min y temp_max). No es la mín/máx del día,
+   * pero sirve de cota razonable y siempre incluye la temperatura actual.
+   */
+  respaldo: { minima: number; maxima: number };
+}
+
+/**
+ * Mínima, máxima y probabilidad de lluvia de HOY.
+ *
+ * - Mín/máx: las franjas que caen en el día local de la ciudad, junto con la
+ *   temperatura actual. Las franjas ya pasadas del día no vienen en la API, así
+ *   que a media tarde la mínima real (de la madrugada) puede ser menor.
+ * - Si no quedan franjas hoy (de noche tarde), se usa el respaldo, siempre
+ *   ampliado con la temperatura actual.
+ * - Lluvia: el `pop` de la franja más cercana al momento, aunque ya sea de mañana.
+ */
+export function resumenDeHoy(
+  franjas: FranjaPronostico[],
+  zonaHoraria: number,
+  momento: number,
+  { temperatura, respaldo }: DatosDeHoy,
+): ResumenDeHoy {
+  const hoy = claveDiaLocal(momento, zonaHoraria);
+  const deHoy = franjas.filter((f) => claveDiaLocal(f.instante, zonaHoraria) === hoy);
+
+  const minimas = deHoy.length > 0 ? deHoy.map((f) => f.minima) : [respaldo.minima];
+  const maximas = deHoy.length > 0 ? deHoy.map((f) => f.maxima) : [respaldo.maxima];
+
+  const masCercana = franjas.reduce<FranjaPronostico | null>(
+    (mejor, f) =>
+      mejor === null || Math.abs(f.instante - momento) < Math.abs(mejor.instante - momento)
+        ? f
+        : mejor,
+    null,
+  );
+
+  return {
+    minima: Math.min(temperatura, ...minimas),
+    maxima: Math.max(temperatura, ...maximas),
+    probabilidadLluvia: masCercana ? masCercana.probabilidadLluvia : null,
+  };
+}

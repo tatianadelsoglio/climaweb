@@ -17,6 +17,7 @@ export interface ClimaActual {
   ciudad: string;
   pais: string;
   temperatura: number;
+  /** Máxima y mínima de hoy (día local), calculadas con el pronóstico y la temperatura actual. */
   temperaturaMaxima: number;
   temperaturaMinima: number;
   sensacionTermica: number;
@@ -38,6 +39,8 @@ export interface ClimaActual {
   zonaHoraria: number;
   /** Instante de la consulta. */
   momento: number;
+  /** Probabilidad de lluvia de hoy, de 0 a 100; null sin pronóstico. */
+  probabilidadLluvia: number | null;
   /** Próximos días; null si el pronóstico no pudo obtenerse (el clima actual sigue valiendo). */
   pronostico: DiaPronostico[] | null;
 }

@@ -4,6 +4,7 @@ import {
   agruparPorDiaLocal,
   claveDiaLocal,
   extraerFranjas,
+  resumenDeHoy,
   type FranjaPronostico,
 } from "./pronostico.ts";
 
@@ -165,5 +166,55 @@ describe("extraerFranjas", () => {
   it("una respuesta sin lista da un arreglo vacío", () => {
     assert.deepEqual(extraerFranjas(null), []);
     assert.deepEqual(extraerFranjas({}), []);
+  });
+});
+
+describe("resumenDeHoy", () => {
+  // Córdoba, sábado 14/11 15:42. Franjas de hoy: 18:00 y 21:00 locales.
+  const base = { codigo: 800, probabilidadLluvia: 0 };
+  const hoy18 = { ...base, instante: Date.UTC(2026, 10, 14, 21, 0) / 1000, temperatura: 26, minima: 25, maxima: 27 };
+  const hoy21 = { ...base, instante: Date.UTC(2026, 10, 15, 0, 0) / 1000, temperatura: 20, minima: 19, maxima: 21, probabilidadLluvia: 40 };
+  const manana00 = { ...base, instante: Date.UTC(2026, 10, 15, 3, 0) / 1000, temperatura: 12, minima: 11, maxima: 13, probabilidadLluvia: 90 };
+  const respaldo = { minima: 21, maxima: 24 };
+
+  it("usa las franjas del día local junto con la temperatura actual", () => {
+    const r = resumenDeHoy([hoy18, hoy21, manana00], CORDOBA, MOMENTO, { temperatura: 24, respaldo });
+    assert.equal(r.minima, 19);
+    assert.equal(r.maxima, 27);
+  });
+
+  it("la temperatura actual puede ser el extremo", () => {
+    const r = resumenDeHoy([hoy18, hoy21], CORDOBA, MOMENTO, { temperatura: 31, respaldo });
+    assert.equal(r.maxima, 31);
+    const fria = resumenDeHoy([hoy18, hoy21], CORDOBA, MOMENTO, { temperatura: 15, respaldo });
+    assert.equal(fria.minima, 15);
+  });
+
+  it("no cuenta franjas de mañana aunque sean de la misma fecha UTC", () => {
+    // 15/11 03:00 UTC es 00:00 del 15 en Córdoba: mañana, no hoy.
+    const r = resumenDeHoy([hoy18, manana00], CORDOBA, MOMENTO, { temperatura: 24, respaldo });
+    assert.equal(r.minima, 24);
+  });
+
+  it("la probabilidad de lluvia sale de la franja más cercana", () => {
+    const r = resumenDeHoy([hoy18, hoy21, manana00], CORDOBA, MOMENTO, { temperatura: 24, respaldo });
+    assert.equal(r.probabilidadLluvia, 0); // 18:00 está a 2 h 18 min; 21:00, a 5 h 18 min
+  });
+
+  it("de noche tarde, sin franjas de hoy, usa el respaldo ampliado con la temperatura actual", () => {
+    // 23:30 local del sábado: la próxima franja ya es del domingo.
+    const tarde = Date.UTC(2026, 10, 15, 2, 30) / 1000;
+    const r = resumenDeHoy([manana00], CORDOBA, tarde, { temperatura: 22, respaldo });
+    assert.equal(r.minima, 21);
+    assert.equal(r.maxima, 24);
+    assert.equal(r.probabilidadLluvia, 90);
+
+    const calida = resumenDeHoy([manana00], CORDOBA, tarde, { temperatura: 26, respaldo });
+    assert.equal(calida.maxima, 26);
+  });
+
+  it("sin pronóstico alcanza con el respaldo y no hay probabilidad de lluvia", () => {
+    const r = resumenDeHoy([], CORDOBA, MOMENTO, { temperatura: 23, respaldo });
+    assert.deepEqual(r, { minima: 21, maxima: 24, probabilidadLluvia: null });
   });
 });

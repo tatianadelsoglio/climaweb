@@ -2,6 +2,7 @@ import { OpenWeatherError, pedirJson } from "@/lib/openWeatherHttp";
 import {
   agruparPorDiaLocal,
   extraerFranjas,
+  resumenDeHoy,
   type FranjaPronostico,
 } from "@/lib/pronostico";
 import type { BusquedaValida } from "@/lib/validarBusqueda";
@@ -110,12 +111,17 @@ export async function obtenerClima(
 
   const [condicion] = datos.weather;
   const momento = Math.floor(Date.now() / 1000);
+  // temp_min y temp_max del clima actual no son los del día: se calculan con el pronóstico.
+  const hoy = resumenDeHoy(franjas ?? [], datos.timezone, momento, {
+    temperatura: datos.main.temp,
+    respaldo: { minima: datos.main.temp_min, maxima: datos.main.temp_max },
+  });
   return {
     ciudad: datos.name,
     pais: datos.sys.country,
     temperatura: datos.main.temp,
-    temperaturaMaxima: datos.main.temp_max,
-    temperaturaMinima: datos.main.temp_min,
+    temperaturaMaxima: hoy.maxima,
+    temperaturaMinima: hoy.minima,
     sensacionTermica: datos.main.feels_like,
     humedad: datos.main.humidity,
     viento: {
@@ -127,6 +133,7 @@ export async function obtenerClima(
     atardecer: instanteOpcional(datos.sys.sunset),
     zonaHoraria: datos.timezone,
     momento,
+    probabilidadLluvia: hoy.probabilidadLluvia,
     pronostico: franjas ? agruparPorDiaLocal(franjas, datos.timezone, momento) : null,
   };
 }
