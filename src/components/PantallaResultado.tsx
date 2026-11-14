@@ -10,29 +10,41 @@ import {
   nombrePais,
 } from "@/lib/formatoClima";
 import type { Cielo } from "@/lib/resolverCielo";
+import type { Unidad } from "@/lib/unidades";
 import type { ClimaActual } from "@/types/clima";
 
 interface PantallaResultadoProps {
   clima: ClimaActual;
   cielo: Cielo;
+  unidad: Unidad;
 }
 
-function Extremo({ icono: Icono, etiqueta, valor }: { icono: LucideIcon; etiqueta: string; valor: number }) {
+function Extremo({
+  icono: Icono,
+  etiqueta,
+  valor,
+  unidad,
+}: {
+  icono: LucideIcon;
+  etiqueta: string;
+  valor: number;
+  unidad: Unidad;
+}) {
   return (
     <p className="flex items-center gap-3xs lg:gap-2xs">
       <Icono aria-hidden className="size-4 text-fg-muted lg:size-[18px]" />
       <span className="font-bold text-fg lg:font-semibold">
         <span className="sr-only lg:not-sr-only">{etiqueta} </span>
-        {formatearTemperatura(valor)}
+        {formatearTemperatura(valor, unidad)}
       </span>
     </p>
   );
 }
 
-export default function PantallaResultado({ clima, cielo }: PantallaResultadoProps) {
+export default function PantallaResultado({ clima, cielo, unidad }: PantallaResultadoProps) {
   const { momento, zonaHoraria } = clima;
   const hora = formatearHoraLocal(momento, zonaHoraria);
-  const temperatura = formatearTemperatura(clima.temperatura);
+  const temperatura = formatearTemperatura(clima.temperatura, unidad);
   // Con 4 caracteres (104°, −12°) el número se achica solo si no entra en su fila.
   const tamanioTemperatura =
     temperatura.length > 3
@@ -80,10 +92,10 @@ export default function PantallaResultado({ clima, cielo }: PantallaResultadoPro
             </p>
             <div className="flex flex-wrap items-center gap-x-inset pt-sm text-body lg:gap-x-xl lg:pt-lg lg:text-lead">
               <p className="text-fg-muted">
-                Sensación {formatearTemperatura(clima.sensacionTermica)}
+                Sensación {formatearTemperatura(clima.sensacionTermica, unidad)}
               </p>
-              <Extremo icono={ArrowUp} etiqueta="Máx" valor={clima.temperaturaMaxima} />
-              <Extremo icono={ArrowDown} etiqueta="Mín" valor={clima.temperaturaMinima} />
+              <Extremo icono={ArrowUp} etiqueta="Máx" valor={clima.temperaturaMaxima} unidad={unidad} />
+              <Extremo icono={ArrowDown} etiqueta="Mín" valor={clima.temperaturaMinima} unidad={unidad} />
             </div>
           </div>
         </section>

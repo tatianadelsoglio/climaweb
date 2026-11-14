@@ -1,3 +1,5 @@
+import { convertirTemperatura, type Unidad } from "./unidades.ts";
+
 const PUNTOS_CARDINALES = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"] as const;
 const SIGNO_MENOS = "−";
 
@@ -21,9 +23,12 @@ function partesLocales(
   return Object.fromEntries(partes.map(({ type, value }) => [type, value]));
 }
 
-/** 24 → "24°", -12.4 → "−12°" (con signo menos tipográfico). */
-export function formatearTemperatura(grados: number): string {
-  const redondeado = Math.round(grados);
+/**
+ * 24 → "24°", -12.4 → "−12°" (con signo menos tipográfico). Recibe grados
+ * Celsius y convierte a la unidad pedida antes de redondear.
+ */
+export function formatearTemperatura(celsius: number, unidad: Unidad = "C"): string {
+  const redondeado = Math.round(convertirTemperatura(celsius, unidad));
   if (redondeado < 0) return `${SIGNO_MENOS}${Math.abs(redondeado)}°`;
   return `${Math.abs(redondeado)}°`;
 }

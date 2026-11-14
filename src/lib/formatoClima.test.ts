@@ -24,6 +24,13 @@ describe("formatearTemperatura", () => {
   it("no muestra «−0°»", () => {
     assert.equal(formatearTemperatura(-0.4), "0°");
   });
+
+  it("convierte a Fahrenheit antes de redondear", () => {
+    assert.equal(formatearTemperatura(24, "F"), "75°");
+    assert.equal(formatearTemperatura(0, "F"), "32°");
+    assert.equal(formatearTemperatura(-20, "F"), "−4°");
+    assert.equal(formatearTemperatura(21.4, "F"), "71°");
+  });
 });
 
 describe("fecha y hora locales de la ciudad", () => {

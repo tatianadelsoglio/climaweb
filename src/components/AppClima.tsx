@@ -11,10 +11,12 @@ import PantallaResultado from "@/components/PantallaResultado";
 import { useCieloDocumento } from "@/hooks/useCieloDocumento";
 import { useClima } from "@/hooks/useClima";
 import { useFocoEnContenido } from "@/hooks/useFocoEnContenido";
+import { useUnidad } from "@/hooks/useUnidad";
 import { interpretarBusqueda } from "@/lib/parsearBusqueda";
 
 export default function AppClima() {
   const { resultado, buscar, reintentar } = useClima();
+  const [unidad, setUnidad] = useUnidad();
   const [texto, setTexto] = useState("");
   const [errorCampo, setErrorCampo] = useState<string | null>(null);
   useCieloDocumento(resultado.cielo);
@@ -57,6 +59,8 @@ export default function AppClima() {
       className="relative isolate flex min-h-dvh flex-1 flex-col overflow-x-clip bg-cielo"
     >
       <Encabezado
+        unidad={unidad}
+        onCambiarUnidad={setUnidad}
         buscador={
           <CampoBusqueda
             valor={texto}
@@ -72,7 +76,7 @@ export default function AppClima() {
         {resultado.estado === "inicial" && <PantallaInicial onElegirCiudad={elegirCiudad} />}
         {resultado.estado === "cargando" && <PantallaCargando consulta={resultado.consulta} />}
         {resultado.estado === "exito" && (
-          <PantallaResultado clima={resultado.clima} cielo={resultado.cielo} />
+          <PantallaResultado clima={resultado.clima} cielo={resultado.cielo} unidad={unidad} />
         )}
         {resultado.estado === "error" && (
           <PantallaError
@@ -83,7 +87,7 @@ export default function AppClima() {
         )}
       </main>
 
-      <AnuncioEstado resultado={resultado} />
+      <AnuncioEstado resultado={resultado} unidad={unidad} />
     </div>
   );
 }

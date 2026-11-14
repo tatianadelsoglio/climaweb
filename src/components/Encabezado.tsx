@@ -1,17 +1,20 @@
 import type { ReactNode } from "react";
 import BotonUbicacion from "@/components/BotonUbicacion";
 import SelectorUnidad from "@/components/SelectorUnidad";
+import type { Unidad } from "@/lib/unidades";
 
 interface EncabezadoProps {
   /** Campo de búsqueda. */
   buscador: ReactNode;
+  unidad: Unidad;
+  onCambiarUnidad: (unidad: Unidad) => void;
 }
 
 /**
  * Mobile: marca y unidad arriba, buscador debajo.
  * Desktop: marca (200) · buscador centrado · unidad (200).
  */
-export default function Encabezado({ buscador }: EncabezadoProps) {
+export default function Encabezado({ buscador, unidad, onCambiarUnidad }: EncabezadoProps) {
   return (
     <header className="grid grid-cols-[1fr_auto] items-center px-xl lg:grid-cols-[200px_minmax(0,1fr)_200px] lg:gap-2xl lg:px-gutter lg:py-3xl">
       <p className="flex items-center gap-sm py-sm lg:gap-field lg:py-0">
@@ -28,7 +31,7 @@ export default function Encabezado({ buscador }: EncabezadoProps) {
       </div>
 
       <div className="col-start-2 row-start-1 justify-self-end py-sm lg:col-start-3 lg:py-0">
-        <SelectorUnidad />
+        <SelectorUnidad unidad={unidad} onCambiar={onCambiarUnidad} />
       </div>
     </header>
   );
