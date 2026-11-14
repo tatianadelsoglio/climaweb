@@ -1,10 +1,17 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Bricolage_Grotesque, Figtree } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const bricolageGrotesque = Bricolage_Grotesque({
+  variable: "--font-bricolage-grotesque",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const figtree = Figtree({
+  variable: "--font-figtree",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -14,10 +21,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es" className={`${geistSans.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-sky-700 font-sans text-slate-900">
-        {children}
-      </body>
+    <html
+      lang="es"
+      className={`${bricolageGrotesque.variable} ${figtree.variable} h-full antialiased`}
+    >
+      <body className="flex min-h-full flex-col font-sans text-fg">{children}</body>
     </html>
   );
 }

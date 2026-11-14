@@ -1,5 +1,95 @@
 @import "tailwindcss";
 
-@theme inline {
-  --font-sans: var(--font-geist-sans);
+/* Tokens de la dirección B «Atmósfera» (design/climaweb.pen → globals.css (B)). */
+@theme {
+  --color-sky-top: #173F86;
+  --color-sky-bottom: #2858A3;
+  --color-sky-glow: #FFB86B47;
+  --color-glass: #FFFFFF1A;
+  --color-glass-strong: #FFFFFF29;
+  --color-glass-line: #FFFFFF33;
+  --color-accent: #FFC56B;
+  --color-on-accent: #14161F;
+  --color-focus: #FFFFFF;
+  --color-panel: #FFFFFF;
+  --color-panel-ink: #12172A;
+  --color-panel-muted: #535A6E;
+  --color-panel-highlight: #EBEEFF;
+  --color-danger: #FFB4A8;
+  --color-skeleton: #FFFFFF24;
+  --color-fg: #FFFFFF;
+  --color-fg-muted: #FFFFFFE0;
+
+  --font-display: var(--font-bricolage-grotesque);
+  --font-sans: var(--font-figtree);
+
+  --text-micro: 12px;
+  --text-overline: 13px;
+  --text-caption: 14px;
+  --text-body: 16px;
+  --text-button: 17px;
+  --text-lead: 18px;
+  --text-subtitle: 20px;
+  --text-stat: 22px;
+  --text-title: 24px;
+  --text-title-lg: 28px;
+  --text-heading-sm: 36px;
+  --text-heading: 40px;
+  --text-hero-mobile: 48px;
+  --text-display: 56px;
+  --text-hero-desktop: 88px;
+  --text-temp-mobile: 136px;
+  --text-temp-desktop: 232px;
+
+  --spacing-3xs: 2px;
+  --spacing-toggle: 3px;
+  --spacing-2xs: 4px;
+  --spacing-xs: 6px;
+  --spacing-sm: 8px;
+  --spacing-field: 10px;
+  --spacing-md: 12px;
+  --spacing-inset: 14px;
+  --spacing-lg: 16px;
+  --spacing-chip: 18px;
+  --spacing-xl: 20px;
+  --spacing-card: 22px;
+  --spacing-2xl: 24px;
+  --spacing-3xl: 28px;
+  --spacing-4xl: 32px;
+  --spacing-5xl: 48px;
+  --spacing-control: 56px;
+  --spacing-gutter: 64px;
+
+  --radius-xs: 6px;
+  --radius-sm: 12px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-2xl: 28px;
+  --radius-pill: 9999px;
+}
+
+[data-sky="clear-night"] {
+  --color-sky-top: #090D22;
+  --color-sky-bottom: #1E2557;
+  --color-sky-glow: #7C8CFF40;
+  --color-accent: #C7CEFF;
+}
+
+[data-sky="rain"] {
+  --color-sky-top: #1B2631;
+  --color-sky-bottom: #33495B;
+  --color-sky-glow: #8FB3C940;
+  --color-accent: #A8DCEC;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-sky-top);
+  }
+
+  body {
+    /* El .pen mide el texto con el interlineado natural de cada fuente. */
+    line-height: normal;
+  }
 }
