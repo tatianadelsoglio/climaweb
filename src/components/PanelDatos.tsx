@@ -1,15 +1,17 @@
-import { Droplets, Sunrise, Sunset, Wind, type LucideIcon } from "lucide-react";
+import { Droplets, Sunrise, Sunset, Umbrella, Wind, type LucideIcon } from "lucide-react";
 import ArcoSolar from "@/components/ArcoSolar";
 import { progresoSolar } from "@/lib/posicionSolar";
 import {
   formatearHoraLocal,
-  formatearHumedad,
+  formatearPorcentaje,
   formatearViento,
 } from "@/lib/formatoClima";
+import type { EstadoPronostico } from "@/hooks/usePronostico";
 import type { ClimaActual } from "@/types/clima";
 
 interface PanelDatosProps {
   clima: ClimaActual;
+  pronostico: EstadoPronostico;
 }
 
 function Dato({ icono: Icono, etiqueta, valor }: { icono: LucideIcon; etiqueta: string; valor: string }) {
@@ -44,19 +46,26 @@ function HoraSolar({
   );
 }
 
-export default function PanelDatos({ clima }: PanelDatosProps) {
+export default function PanelDatos({ clima, pronostico }: PanelDatosProps) {
   const { zonaHoraria, amanecer, atardecer } = clima;
   const hayHorarioSolar = amanecer !== null && atardecer !== null;
   const progreso = progresoSolar(clima);
+  // La probabilidad de hoy sale del día completo del pronóstico; sin él, «—».
+  const lluviaHoy = pronostico.estado === "listo" ? pronostico.dias[0].probabilidadLluvia : null;
 
   return (
     <section aria-label="Detalles" className="glass flex flex-col rounded-xl lg:rounded-2xl">
-      <dl className="flex gap-lg px-xl py-lg lg:gap-2xl lg:px-2xl lg:py-xl">
-        <Dato icono={Droplets} etiqueta="Humedad" valor={formatearHumedad(clima.humedad)} />
+      <dl className="grid grid-cols-2 gap-lg px-xl py-lg lg:grid-cols-3 lg:gap-2xl lg:px-2xl lg:py-xl">
+        <Dato icono={Droplets} etiqueta="Humedad" valor={formatearPorcentaje(clima.humedad)} />
         <Dato
           icono={Wind}
           etiqueta="Viento"
           valor={formatearViento(clima.viento.velocidad, clima.viento.direccion)}
+        />
+        <Dato
+          icono={Umbrella}
+          etiqueta="Lluvia"
+          valor={lluviaHoy === null ? "—" : formatearPorcentaje(lluviaHoy)}
         />
       </dl>
 

@@ -4,7 +4,7 @@ import {
   formatearFechaLocal,
   formatearHoraLocal,
   formatearDiaPronostico,
-  formatearHumedad,
+  formatearPorcentaje,
   formatearTemperatura,
   formatearViento,
   nombrePais,
@@ -65,8 +65,8 @@ describe("viento y humedad", () => {
     assert.equal(formatearViento(9, null), "9 km/h");
   });
 
-  it("formatea la humedad", () => {
-    assert.equal(formatearHumedad(58), "58 %");
+  it("formatea un porcentaje", () => {
+    assert.equal(formatearPorcentaje(58), "58 %");
   });
 });
 

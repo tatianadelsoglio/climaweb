@@ -119,7 +119,7 @@ export default function PantallaResultado({
               className="size-[220px]"
             />
           </div>
-          <PanelDatos clima={clima} />
+          <PanelDatos clima={clima} pronostico={pronostico} />
         </div>
       </div>
 

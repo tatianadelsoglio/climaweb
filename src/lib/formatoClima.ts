@@ -84,7 +84,7 @@ export function formatearViento(kmh: number, direccion: number | null): string {
   return direccion === null ? velocidad : `${velocidad} ${puntoCardinal(direccion)}`;
 }
 
-export function formatearHumedad(porcentaje: number): string {
+export function formatearPorcentaje(porcentaje: number): string {
   return `${Math.round(porcentaje)} %`;
 }
 
