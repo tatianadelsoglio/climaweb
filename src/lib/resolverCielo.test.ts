@@ -26,8 +26,13 @@ describe("resolverCielo", () => {
     assert.equal(resolverCielo(datos(800, NOCHE_CORDOBA)), "clear-night");
   });
 
-  it("801 a 804 → clouds de día y de noche", () => {
-    for (const codigo of [801, 802, 803, 804]) {
+  it("801 (pocas nubes) → clear de día y de noche", () => {
+    assert.equal(resolverCielo(datos(801, MEDIODIA_CORDOBA)), "clear-day");
+    assert.equal(resolverCielo(datos(801, NOCHE_CORDOBA)), "clear-night");
+  });
+
+  it("802 a 804 → clouds de día y de noche", () => {
+    for (const codigo of [802, 803, 804]) {
       assert.equal(resolverCielo(datos(codigo, MEDIODIA_CORDOBA)), "clouds-day");
       assert.equal(resolverCielo(datos(codigo, NOCHE_CORDOBA)), "clouds-night");
     }
@@ -65,7 +70,8 @@ const CODIGOS_OPENWEATHER = {
   nieve: [600, 601, 602, 611, 612, 613, 615, 616, 620, 621, 622],
   atmosfera: [701, 711, 721, 731, 741, 751, 761, 762, 771, 781],
   despejado: [800],
-  nubes: [801, 802, 803, 804],
+  pocasNubes: [801],
+  nubes: [802, 803, 804],
 } as const;
 
 describe("mapeo de todos los códigos de OpenWeather a cielos", () => {
@@ -76,6 +82,7 @@ describe("mapeo de todos los códigos de OpenWeather a cielos", () => {
     nieve: ["snow", "snow"],
     atmosfera: ["mist", "mist"],
     despejado: ["clear-day", "clear-night"],
+    pocasNubes: ["clear-day", "clear-night"],
     nubes: ["clouds-day", "clouds-night"],
   };
 

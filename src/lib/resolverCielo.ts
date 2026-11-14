@@ -69,7 +69,7 @@ export function resolverCielo(datos: DatosCielo): Cielo {
   if (grupo === 7) return "mist";
 
   const dia = esDeDia(datos);
-  if (codigo >= 801 && codigo <= 804) return dia ? "clouds-day" : "clouds-night";
-  // 800 y cualquier código desconocido.
+  if (codigo >= 802 && codigo <= 804) return dia ? "clouds-day" : "clouds-night";
+  // 800, 801 (pocas nubes: el cielo sigue despejado) y cualquier código desconocido.
   return dia ? "clear-day" : "clear-night";
 }
