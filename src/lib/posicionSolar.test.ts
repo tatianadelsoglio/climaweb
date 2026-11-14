@@ -14,7 +14,8 @@ function enCordoba(hora: number, minuto: number) {
 }
 
 function cerca(real: number | null, esperado: number) {
-  expect(real !== null && Math.abs(real - esperado) < 1e-9, `${real} ≠ ${esperado}`).toBeTruthy();
+  expect(real).not.toBeNull();
+  expect(real as number).toBeCloseTo(esperado, 9);
 }
 
 describe("progresoSolar", () => {
@@ -34,7 +35,9 @@ describe("progresoSolar", () => {
 
   it("casi 1 justo antes del atardecer", () => {
     const p = progresoSolar(enCordoba(19, 57));
-    expect(p !== null && p > 0.99 && p < 1).toBeTruthy();
+    expect(p).not.toBeNull();
+    expect(p as number).toBeGreaterThan(0.99);
+    expect(p as number).toBeLessThan(1);
   });
 
   it("de noche no hay progreso (misma lógica que el cielo)", () => {
@@ -47,7 +50,7 @@ describe("progresoSolar", () => {
   it("usa la hora de la ciudad, no la del usuario ni UTC", () => {
     // 15:00 UTC es mediodía en Córdoba (12:00) y de noche en Tokio (00:00).
     const mediodiaCordoba = { ...CORDOBA, momento: Date.UTC(2026, 10, 14, 15, 0) / 1000 };
-    expect(progresoSolar(mediodiaCordoba) !== null).toBeTruthy();
+    expect(progresoSolar(mediodiaCordoba)).not.toBeNull();
 
     const TOKIO = {
       zonaHoraria: 9 * 3600,
@@ -89,24 +92,27 @@ describe("progresoSolar", () => {
 describe("posicionEnArco", () => {
   it("extremos y centro", () => {
     const inicio = posicionEnArco(0);
-    expect(Math.abs(inicio.x) < 1e-9 && Math.abs(inicio.y) < 1e-9).toBeTruthy();
+    expect(inicio.x).toBeCloseTo(0, 9);
+    expect(inicio.y).toBeCloseTo(0, 9);
     const medio = posicionEnArco(0.5);
-    expect(Math.abs(medio.x - 0.5) < 1e-9 && Math.abs(medio.y - 1) < 1e-9).toBeTruthy();
+    expect(medio.x).toBeCloseTo(0.5, 9);
+    expect(medio.y).toBeCloseTo(1, 9);
     const fin = posicionEnArco(1);
-    expect(Math.abs(fin.x - 1) < 1e-9 && Math.abs(fin.y) < 1e-9).toBeTruthy();
+    expect(fin.x).toBeCloseTo(1, 9);
+    expect(fin.y).toBeCloseTo(0, 9);
   });
 
   it("sigue la elipse: no es una recta ni una parábola", () => {
     // A un cuarto del recorrido (45°) el sol ya está al 70,7 % de la altura.
     const { x, y } = posicionEnArco(0.25);
-    expect(Math.abs(x - (1 - Math.SQRT1_2) / 2) < 1e-9).toBeTruthy();
-    expect(Math.abs(y - Math.SQRT1_2) < 1e-9).toBeTruthy();
+    expect(x).toBeCloseTo((1 - Math.SQRT1_2) / 2, 9);
+    expect(y).toBeCloseTo(Math.SQRT1_2, 9);
   });
 
   it("coincide con la posición del diseño (progreso 0,69 → sol a x≈0,78 del ancho)", () => {
     // El .pen dibuja el sol a 55,8° del eje derecho: progreso = (180 − 55,8) / 180.
     const { x, y } = posicionEnArco((180 - 55.8) / 180);
-    expect(Math.abs(x - (1 + Math.cos((55.8 * Math.PI) / 180)) / 2) < 1e-9).toBeTruthy();
-    expect(Math.abs(y - Math.sin((55.8 * Math.PI) / 180)) < 1e-9).toBeTruthy();
+    expect(x).toBeCloseTo((1 + Math.cos((55.8 * Math.PI) / 180)) / 2, 9);
+    expect(y).toBeCloseTo(Math.sin((55.8 * Math.PI) / 180), 9);
   });
 });

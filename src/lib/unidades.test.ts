@@ -10,12 +10,12 @@ describe("convertirTemperatura", () => {
     expect(convertirTemperatura(0, "F")).toBe(32);
     expect(convertirTemperatura(100, "F")).toBe(212);
     expect(convertirTemperatura(-40, "F")).toBe(-40);
-    expect(Math.abs(convertirTemperatura(37, "F") - 98.6) < 1e-9).toBeTruthy();
+    expect(convertirTemperatura(37, "F")).toBeCloseTo(98.6, 9);
   });
 
   it("no pierde precisión al ir y venir con valores comunes", () => {
     const f = convertirTemperatura(21.5, "F");
-    expect(Math.abs(((f - 32) * 5) / 9 - 21.5) < 1e-9).toBeTruthy();
+    expect(((f - 32) * 5) / 9).toBeCloseTo(21.5, 9);
   });
 });
 

@@ -44,7 +44,9 @@ describe("normalizarPronostico", () => {
     const sinColumna = {
       daily: { ...RESPUESTA.daily, precipitation_probability_max: undefined },
     };
-    expect(normalizarPronostico(sinColumna).every((d) => d.probabilidadLluvia === null)).toBeTruthy();
+    expect(normalizarPronostico(sinColumna).map((d) => d.probabilidadLluvia)).toStrictEqual(
+      Array(7).fill(null),
+    );
 
     const conNull = {
       daily: { ...RESPUESTA.daily, precipitation_probability_max: [null, 10, 20, 30, 40, 50, 60] },

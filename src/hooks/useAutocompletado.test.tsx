@@ -335,7 +335,7 @@ describe("CampoBusqueda · teclado del combobox (↑ ↓ Enter Esc)", () => {
 
   it("Enter justo después de seguir escribiendo NUNCA elige la sugerencia vieja", async () => {
     const { campo, alElegir } = await escribirYRecibir("Sant", [SANTIAGO]);
-    expect(screen.getByRole("listbox")).toBeTruthy();
+    expect(screen.getByRole("listbox")).not.toBeNull();
 
     // Se termina de escribir y se aprieta Enter antes de que lleguen las sugerencias nuevas.
     fireEvent.change(campo, { target: { value: "Santa Fe" } });
@@ -359,12 +359,12 @@ describe("CampoBusqueda · teclado del combobox (↑ ↓ Enter Esc)", () => {
     fireEvent.keyDown(campo, { key: "ArrowDown" });
     await avanzar(300);
     await act(async () => control.pendientes.at(-1)?.resolver(respuesta(CORDOBA_AR)));
-    expect(screen.getByRole("listbox")).toBeTruthy();
+    expect(screen.getByRole("listbox")).not.toBeNull();
   });
 
   it("anuncia la cantidad de sugerencias en una región status", async () => {
     await escribirYRecibir("Córd", [CORDOBA_AR, CORDOBA_ES]);
-    expect(screen.getByText(/2 sugerencias/)).toBeTruthy();
+    expect(screen.getByText(/2 sugerencias/).textContent).toContain("2 sugerencias");
   });
 
   it("clic en una opción la elige", async () => {

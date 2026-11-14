@@ -11,7 +11,7 @@ describe("formatearCoordenada", () => {
   it("nunca usa notación científica", () => {
     expect(formatearCoordenada(0.00000001)).toBe("0.00");
     expect(formatearCoordenada(1e-8)).toBe("0.00");
-    expect(!/e/i.test(formatearCoordenada(123456789e-12))).toBeTruthy();
+    expect(formatearCoordenada(123456789e-12)).not.toMatch(/e/i);
   });
 
   it("no devuelve «-0.00»", () => {
