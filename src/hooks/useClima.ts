@@ -7,20 +7,16 @@ import {
   resolverCielo,
   type Cielo,
 } from "@/lib/resolverCielo";
-import type { BusquedaValida, CoordenadasValidas } from "@/lib/validarBusqueda";
-import type { ClimaActual, CodigoError, DiaPronostico, ErrorApi } from "@/types/clima";
-
-/** Consulta por coordenadas: autocompletado o geolocalización. */
-export interface ConsultaCoordenadas extends CoordenadasValidas {
-  /** Cómo se nombra la consulta mientras carga o si falla («tu ubicación»). */
-  etiqueta: string;
-  /** Nombre en español elegido por la persona; reemplaza al que informa el clima. */
-  nombre?: string;
-  /** Código ISO del país elegido; reemplaza al que informa el clima. */
-  pais?: string;
-}
-
-export type ConsultaClima = BusquedaValida | ConsultaCoordenadas;
+import { CLAVE_ULTIMA_CONSULTA, consultaParaGuardar } from "@/lib/ultimaConsulta";
+import { guardarAlmacenado } from "@/lib/almacenamiento";
+import type {
+  ClimaActual,
+  CodigoError,
+  ConsultaClima,
+  ConsultaCoordenadas,
+  DiaPronostico,
+  ErrorApi,
+} from "@/types/clima";
 
 function esPorCoordenadas(consulta: ConsultaClima): consulta is ConsultaCoordenadas {
   return "lat" in consulta;
@@ -188,6 +184,8 @@ export function useClima() {
         return;
       }
       const clima = conNombreElegido(datos, consulta);
+      const guardable = consultaParaGuardar(consulta, clima);
+      if (guardable) guardarAlmacenado(CLAVE_ULTIMA_CONSULTA, JSON.stringify(guardable));
       setResultado({ estado: "exito", clima, cielo: resolverCielo(clima) });
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AnuncioEstado from "@/components/AnuncioEstado";
 import CampoBusqueda from "@/components/CampoBusqueda";
 import AlertaUbicacion from "@/components/AlertaUbicacion";
@@ -10,15 +10,18 @@ import PantallaError from "@/components/PantallaError";
 import PantallaInicial, { type CiudadSugerida } from "@/components/PantallaInicial";
 import PantallaResultado from "@/components/PantallaResultado";
 import { useAutocompletado } from "@/hooks/useAutocompletado";
+import { useConsultaInicial } from "@/hooks/useConsultaInicial";
 import { useCieloDocumento } from "@/hooks/useCieloDocumento";
-import { useClima, type ConsultaCoordenadas } from "@/hooks/useClima";
+import { useClima } from "@/hooks/useClima";
 import { useFocoEnContenido } from "@/hooks/useFocoEnContenido";
 import { useGeolocalizacion } from "@/hooks/useGeolocalizacion";
 import { useSugerencias } from "@/hooks/useSugerencias";
 import { useUnidad } from "@/hooks/useUnidad";
 import { interpretarBusqueda } from "@/lib/parsearBusqueda";
 import { textoSugerencia } from "@/lib/sugerencias";
+import { textoDeConsulta } from "@/lib/ultimaConsulta";
 import type { CoordenadasValidas } from "@/lib/validarBusqueda";
+import type { ConsultaCoordenadas } from "@/types/clima";
 import type { Sugerencia } from "@/types/geocoding";
 
 function consultaDeSugerencia(sugerencia: Sugerencia): ConsultaCoordenadas {
@@ -34,7 +37,10 @@ function consultaDeSugerencia(sugerencia: Sugerencia): ConsultaCoordenadas {
 export default function AppClima() {
   const { resultado, buscar, reintentar } = useClima();
   const [unidad, setUnidad] = useUnidad();
-  const [texto, setTexto] = useState("");
+  const consultaInicial = useConsultaInicial();
+  // null = la persona todavía no tocó el campo: muestra la última ciudad guardada.
+  const [textoEditado, setTexto] = useState<string | null>(null);
+  const texto = textoEditado ?? (consultaInicial ? textoDeConsulta(consultaInicial) : "");
   const [errorCampo, setErrorCampo] = useState<string | null>(null);
   // Sugerencia elegida y el texto que dejó en el campo: si se vuelve a buscar con
   // ese mismo texto (que no es una búsqueda válida por sí solo) se usa la elegida.
@@ -59,6 +65,11 @@ export default function AppClima() {
     [buscar, llevarFocoAlContenido],
   );
   const ubicacion = useGeolocalizacion(alObtenerUbicacion);
+
+  // Al abrir la app vuelve a mostrarse la última ciudad consultada, si se guardó.
+  useEffect(() => {
+    if (consultaInicial) void buscar(consultaInicial);
+  }, [consultaInicial, buscar]);
 
   function ubicar() {
     origenDelFocoRef.current = document.activeElement;

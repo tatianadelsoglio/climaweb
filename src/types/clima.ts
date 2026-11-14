@@ -1,3 +1,17 @@
+import type { BusquedaValida, CoordenadasValidas } from "@/lib/validarBusqueda";
+
+/** Consulta por coordenadas: autocompletado o geolocalización. */
+export interface ConsultaCoordenadas extends CoordenadasValidas {
+  /** Cómo se nombra la consulta mientras carga o si falla («tu ubicación»). */
+  etiqueta: string;
+  /** Nombre en español elegido por la persona; reemplaza al que informa el clima. */
+  nombre?: string;
+  /** Código ISO del país elegido; reemplaza al que informa el clima. */
+  pais?: string;
+}
+
+export type ConsultaClima = BusquedaValida | ConsultaCoordenadas;
+
 /** Un día del pronóstico, agrupado por día local de la ciudad. Celsius. */
 export interface DiaPronostico {
   /** Día local de la ciudad, «2026-11-15». */
