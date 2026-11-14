@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { OpenWeatherError, obtenerClima } from "@/lib/openWeatherService";
+import { OpenWeatherError } from "@/lib/openWeatherHttp";
+import { obtenerClima } from "@/lib/openWeatherService";
 import { validarBusqueda } from "@/lib/validarBusqueda";
 import type { CodigoError, ErrorApi, RespuestaClima } from "@/types/clima";
 

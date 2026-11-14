@@ -1,20 +1,15 @@
+import { OpenWeatherError, pedirJson } from "@/lib/openWeatherHttp";
+import {
+  agruparPorDiaLocal,
+  extraerFranjas,
+  type FranjaPronostico,
+} from "@/lib/pronostico";
 import type { BusquedaValida } from "@/lib/validarBusqueda";
-import type { ClimaActual, CodigoError } from "@/types/clima";
+import type { ClimaActual } from "@/types/clima";
 
-const OPENWEATHER_URL = "https://api.openweathermap.org/data/2.5/weather";
-const TIMEOUT_MS = 8000;
+const URL_CLIMA = "https://api.openweathermap.org/data/2.5/weather";
+const URL_PRONOSTICO = "https://api.openweathermap.org/data/2.5/forecast";
 const MS_A_KMH = 3.6;
-
-export class OpenWeatherError extends Error {
-  constructor(
-    readonly codigo: CodigoError,
-    readonly status: number,
-    mensaje: string,
-  ) {
-    super(mensaje);
-    this.name = "OpenWeatherError";
-  }
-}
 
 interface OpenWeatherRespuesta {
   name: string;
@@ -73,78 +68,8 @@ function instanteOpcional(valor: unknown): number | null {
   return esNumero(valor) && valor > 0 ? valor : null;
 }
 
-function errorDeEstado(status: number): OpenWeatherError {
-  switch (status) {
-    case 404:
-      return new OpenWeatherError(
-        "CIUDAD_NO_ENCONTRADA",
-        404,
-        "No se encontró la ciudad indicada.",
-      );
-    case 401:
-      // La API key es nuestra: para el cliente es un fallo del servidor, no de autenticación.
-      return new OpenWeatherError(
-        "SERVICIO_NO_CONFIGURADO",
-        502,
-        "El servicio del clima no está configurado correctamente.",
-      );
-    case 429:
-      return new OpenWeatherError(
-        "LIMITE_DE_CONSULTAS",
-        429,
-        "Se superó el límite de consultas. Probá de nuevo en unos minutos.",
-      );
-    default:
-      return new OpenWeatherError(
-        "SERVICIO_NO_DISPONIBLE",
-        502,
-        "El servicio del clima no está disponible por el momento.",
-      );
-  }
-}
-
-export async function obtenerClima(
-  { ciudad, pais }: BusquedaValida,
-  apiKey: string,
-): Promise<ClimaActual> {
-  const url = new URL(OPENWEATHER_URL);
-  url.searchParams.set("q", pais ? `${ciudad},${pais}` : ciudad);
-  url.searchParams.set("units", "metric");
-  url.searchParams.set("lang", "es");
-  url.searchParams.set("appid", apiKey);
-
-  let respuesta: Response;
-  try {
-    respuesta = await fetch(url, {
-      cache: "no-store",
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-    });
-  } catch (error) {
-    if (error instanceof DOMException && error.name === "TimeoutError") {
-      throw new OpenWeatherError(
-        "SERVICIO_NO_DISPONIBLE",
-        504,
-        "El servicio del clima tardó demasiado en responder.",
-      );
-    }
-    throw new OpenWeatherError(
-      "SERVICIO_NO_DISPONIBLE",
-      502,
-      "No se pudo conectar con el servicio del clima.",
-    );
-  }
-
-  if (!respuesta.ok) {
-    throw errorDeEstado(respuesta.status);
-  }
-
-  let datos: unknown;
-  try {
-    datos = await respuesta.json();
-  } catch {
-    datos = null;
-  }
-
+async function pedirClima(url: URL): Promise<OpenWeatherRespuesta> {
+  const datos = await pedirJson(url);
   if (!esRespuestaValida(datos)) {
     throw new OpenWeatherError(
       "RESPUESTA_INVALIDA",
@@ -152,8 +77,39 @@ export async function obtenerClima(
       "El servicio del clima devolvió una respuesta inesperada.",
     );
   }
+  return datos;
+}
+
+/** El pronóstico es accesorio: si falla, el clima actual se muestra igual. */
+async function pedirFranjas(url: URL): Promise<FranjaPronostico[] | null> {
+  try {
+    return extraerFranjas(await pedirJson(url));
+  } catch (error) {
+    console.error("No se pudo obtener el pronóstico", error);
+    return null;
+  }
+}
+
+function urlDe(base: string, { ciudad, pais }: BusquedaValida, apiKey: string): URL {
+  const url = new URL(base);
+  url.searchParams.set("q", pais ? `${ciudad},${pais}` : ciudad);
+  url.searchParams.set("units", "metric");
+  url.searchParams.set("lang", "es");
+  url.searchParams.set("appid", apiKey);
+  return url;
+}
+
+export async function obtenerClima(
+  busqueda: BusquedaValida,
+  apiKey: string,
+): Promise<ClimaActual> {
+  const [datos, franjas] = await Promise.all([
+    pedirClima(urlDe(URL_CLIMA, busqueda, apiKey)),
+    pedirFranjas(urlDe(URL_PRONOSTICO, busqueda, apiKey)),
+  ]);
 
   const [condicion] = datos.weather;
+  const momento = Math.floor(Date.now() / 1000);
   return {
     ciudad: datos.name,
     pais: datos.sys.country,
@@ -170,6 +126,7 @@ export async function obtenerClima(
     amanecer: instanteOpcional(datos.sys.sunrise),
     atardecer: instanteOpcional(datos.sys.sunset),
     zonaHoraria: datos.timezone,
-    momento: Math.floor(Date.now() / 1000),
+    momento,
+    pronostico: franjas ? agruparPorDiaLocal(franjas, datos.timezone, momento) : null,
   };
 }

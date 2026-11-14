@@ -10,11 +10,11 @@ import {
   Snowflake,
   Sun,
 } from "lucide-react";
-import type { Cielo } from "@/lib/resolverCielo";
 
 interface IconoCondicionProps {
   codigo: number;
-  cielo: Cielo;
+  /** Elige la variante nocturna de los íconos que la tienen. */
+  noche: boolean;
   className?: string;
 }
 
@@ -31,7 +31,7 @@ const ICONOS = {
   "despejado-noche": MoonStar,
 } as const;
 
-function clavePara(codigo: number, cielo: Cielo): keyof typeof ICONOS {
+function clavePara(codigo: number, noche: boolean): keyof typeof ICONOS {
   const grupo = Math.floor(codigo / 100);
   if (grupo === 2) return "tormenta";
   if (grupo === 3) return "llovizna";
@@ -39,14 +39,13 @@ function clavePara(codigo: number, cielo: Cielo): keyof typeof ICONOS {
   if (grupo === 6) return "nieve";
   if (grupo === 7) return "niebla";
 
-  const noche = cielo.endsWith("-night");
   if (codigo === 801 || codigo === 802) return noche ? "pocas-nubes-noche" : "pocas-nubes-dia";
   if (codigo === 803 || codigo === 804) return "nublado";
   return noche ? "despejado-noche" : "despejado-dia";
 }
 
 /** Ícono decorativo: la condición ya se informa en texto. */
-export default function IconoCondicion({ codigo, cielo, className }: IconoCondicionProps) {
-  const Icono = ICONOS[clavePara(codigo, cielo)];
+export default function IconoCondicion({ codigo, noche, className }: IconoCondicionProps) {
+  const Icono = ICONOS[clavePara(codigo, noche)];
   return <Icono aria-hidden className={className} />;
 }

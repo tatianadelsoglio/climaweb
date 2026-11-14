@@ -44,6 +44,7 @@ function Extremo({
 export default function PantallaResultado({ clima, cielo, unidad }: PantallaResultadoProps) {
   const { momento, zonaHoraria } = clima;
   const hora = formatearHoraLocal(momento, zonaHoraria);
+  const noche = cielo.endsWith("-night");
   const temperatura = formatearTemperatura(clima.temperatura, unidad);
   // Con 4 caracteres (104°, −12°) el número se achica solo si no entra en su fila.
   const tamanioTemperatura =
@@ -83,7 +84,7 @@ export default function PantallaResultado({ clima, cielo, unidad }: PantallaResu
               </p>
               <IconoCondicion
                 codigo={clima.condicion.codigo}
-                cielo={cielo}
+                noche={noche}
                 className="size-[min(104px,30cqi)] shrink-0 lg:hidden"
               />
             </div>
@@ -104,7 +105,7 @@ export default function PantallaResultado({ clima, cielo, unidad }: PantallaResu
           <div className="hidden flex-1 items-center justify-center lg:flex">
             <IconoCondicion
               codigo={clima.condicion.codigo}
-              cielo={cielo}
+              noche={noche}
               className="size-[220px]"
             />
           </div>
@@ -112,7 +113,7 @@ export default function PantallaResultado({ clima, cielo, unidad }: PantallaResu
         </div>
       </div>
 
-      <PanelPronostico />
+      <PanelPronostico dias={clima.pronostico} zonaHoraria={zonaHoraria} unidad={unidad} />
     </div>
   );
 }

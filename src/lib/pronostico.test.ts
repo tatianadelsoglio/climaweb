@@ -1,0 +1,169 @@
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+import {
+  agruparPorDiaLocal,
+  claveDiaLocal,
+  extraerFranjas,
+  type FranjaPronostico,
+} from "./pronostico.ts";
+
+const CORDOBA = -3 * 3600;
+const TOKIO = 9 * 3600;
+const TRES_HORAS = 3 * 3600;
+// Sábado 14/11/2026 15:42 en Córdoba.
+const MOMENTO = Date.UTC(2026, 10, 14, 18, 42) / 1000;
+
+/** Franjas de 3 h desde `inicio`; la temperatura sube y baja según la hora UTC. */
+function franjas(inicio: number, cantidad: number, zonaHoraria: number): FranjaPronostico[] {
+  return Array.from({ length: cantidad }, (_, i) => {
+    const instante = inicio + i * TRES_HORAS;
+    const hora = ((instante + zonaHoraria) / 3600) % 24;
+    const temperatura = 10 + (hora >= 0 ? hora : hora + 24); // 10° a medianoche, 33° a las 23
+    return {
+      instante,
+      temperatura,
+      minima: temperatura - 1,
+      maxima: temperatura + 1,
+      codigo: 800 + (i % 5),
+      probabilidadLluvia: (i * 10) % 100,
+    };
+  });
+}
+
+// La API arranca en la próxima franja: 18:00 local del sábado.
+const PRIMERA_FRANJA = Date.UTC(2026, 10, 14, 21, 0) / 1000;
+
+describe("claveDiaLocal", () => {
+  it("usa el día de la ciudad, no el de UTC", () => {
+    // 15/11 01:00 UTC es todavía el 14 en Córdoba y ya el 15 en Tokio.
+    const instante = Date.UTC(2026, 10, 15, 1, 0) / 1000;
+    assert.equal(claveDiaLocal(instante, CORDOBA), "2026-11-14");
+    assert.equal(claveDiaLocal(instante, TOKIO), "2026-11-15");
+  });
+});
+
+describe("agruparPorDiaLocal", () => {
+  it("devuelve 5 días sin contar hoy, con fechas locales consecutivas", () => {
+    const dias = agruparPorDiaLocal(franjas(PRIMERA_FRANJA, 40, CORDOBA), CORDOBA, MOMENTO);
+    assert.deepEqual(
+      dias.map((d) => d.fecha),
+      ["2026-11-15", "2026-11-16", "2026-11-17", "2026-11-18", "2026-11-19"],
+    );
+  });
+
+  it("calcula mínima y máxima del día local", () => {
+    const dias = agruparPorDiaLocal(franjas(PRIMERA_FRANJA, 40, CORDOBA), CORDOBA, MOMENTO);
+    // Día 15 completo: 00:00 → 21:00 local. La temperatura es 10 + hora.
+    assert.equal(dias[0].minima, 9); // 00:00 → 10 − 1
+    assert.equal(dias[0].maxima, 32); // 21:00 → 31 + 1
+  });
+
+  it("toma el ícono de la franja más cercana al mediodía local", () => {
+    const todas = franjas(PRIMERA_FRANJA, 40, CORDOBA);
+    const dias = agruparPorDiaLocal(todas, CORDOBA, MOMENTO);
+    const mediodia = todas.find(
+      (f) => f.instante === Date.UTC(2026, 10, 15, 15, 0) / 1000, // 12:00 local
+    );
+    assert.ok(mediodia);
+    assert.equal(dias[0].codigo, mediodia.codigo);
+    assert.equal(dias[0].instante, mediodia.instante);
+  });
+
+  it("la probabilidad de lluvia es la mayor del día", () => {
+    const base: FranjaPronostico = {
+      instante: 0,
+      temperatura: 20,
+      minima: 20,
+      maxima: 20,
+      codigo: 500,
+      probabilidadLluvia: 0,
+    };
+    const manana = Date.UTC(2026, 10, 15, 6, 0) / 1000; // 03:00 local del 15
+    const delDia = [0, 30, 80, 10].map((p, i) => ({
+      ...base,
+      instante: manana + i * TRES_HORAS,
+      probabilidadLluvia: p,
+    }));
+    const [dia] = agruparPorDiaLocal(delDia, CORDOBA, MOMENTO);
+    assert.equal(dia.probabilidadLluvia, 80);
+  });
+
+  it("agrupa con el huso de la ciudad: la franja de 22:00 local no pasa al día siguiente", () => {
+    // 16/11 01:00 UTC = domingo 22:00 en Córdoba, pero lunes 10:00 en Tokio.
+    const instante = Date.UTC(2026, 10, 16, 1, 0) / 1000;
+    const franja: FranjaPronostico = {
+      instante,
+      temperatura: 18,
+      minima: 18,
+      maxima: 18,
+      codigo: 800,
+      probabilidadLluvia: 0,
+    };
+    const resto = franjas(instante + TRES_HORAS, 3, CORDOBA);
+    const dias = agruparPorDiaLocal([franja, ...resto], CORDOBA, MOMENTO);
+    assert.equal(dias[0].fecha, "2026-11-15");
+    assert.equal(dias[1].fecha, "2026-11-16");
+  });
+
+  it("excluye las franjas de hoy", () => {
+    const dias = agruparPorDiaLocal(franjas(PRIMERA_FRANJA, 3, CORDOBA), CORDOBA, MOMENTO);
+    assert.ok(dias.every((d) => d.fecha > "2026-11-14"));
+  });
+
+  it("descarta un último día con muy pocas franjas", () => {
+    // 4 días completos (32 franjas) + 2 franjas del quinto.
+    const dias = agruparPorDiaLocal(franjas(PRIMERA_FRANJA, 2 + 8 * 4 + 2, CORDOBA), CORDOBA, MOMENTO);
+    assert.equal(dias.length, 4);
+  });
+
+  it("conserva un último día parcial si tiene franjas suficientes", () => {
+    const dias = agruparPorDiaLocal(franjas(PRIMERA_FRANJA, 40, CORDOBA), CORDOBA, MOMENTO);
+    assert.equal(dias.length, 5);
+  });
+
+  it("sin franjas no hay días", () => {
+    assert.deepEqual(agruparPorDiaLocal([], CORDOBA, MOMENTO), []);
+  });
+});
+
+describe("extraerFranjas", () => {
+  const item = {
+    dt: 1_000,
+    main: { temp: 20.5, temp_min: 19, temp_max: 22 },
+    weather: [{ id: 801 }],
+    pop: 0.35,
+  };
+
+  it("normaliza una franja y pasa pop a porcentaje", () => {
+    assert.deepEqual(extraerFranjas({ list: [item] }), [
+      {
+        instante: 1_000,
+        temperatura: 20.5,
+        minima: 19,
+        maxima: 22,
+        codigo: 801,
+        probabilidadLluvia: 35,
+      },
+    ]);
+  });
+
+  it("si falta pop, la probabilidad es 0", () => {
+    const sinPop = { ...item, pop: undefined };
+    assert.equal(extraerFranjas({ list: [sinPop] })[0].probabilidadLluvia, 0);
+  });
+
+  it("descarta los elementos inválidos y ordena por instante", () => {
+    const resultado = extraerFranjas({
+      list: [{ ...item, dt: 3_000 }, { dt: "x" }, null, { ...item, dt: 2_000 }],
+    });
+    assert.deepEqual(
+      resultado.map((f) => f.instante),
+      [2_000, 3_000],
+    );
+  });
+
+  it("una respuesta sin lista da un arreglo vacío", () => {
+    assert.deepEqual(extraerFranjas(null), []);
+    assert.deepEqual(extraerFranjas({}), []);
+  });
+});

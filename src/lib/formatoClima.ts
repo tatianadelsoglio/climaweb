@@ -59,6 +59,20 @@ export function formatearFechaLocal(
   return largo ? `${dia} ${day} de ${month}` : `${dia} ${day} ${sinPunto(month)}`;
 }
 
+/** "Dom 15" (con el número del día) o "Dom" (solo el día de la semana), en el huso de la ciudad. */
+export function formatearDiaPronostico(
+  instante: number,
+  zonaHoraria: number,
+  conNumero: boolean,
+): string {
+  const { weekday, day } = partesLocales(instante, zonaHoraria, {
+    weekday: "short",
+    day: "numeric",
+  });
+  const dia = capitalizar(sinPunto(weekday));
+  return conNumero ? `${dia} ${day}` : dia;
+}
+
 /** 0 → "N", 135 → "SE", 315 → "NO". */
 export function puntoCardinal(grados: number): string {
   const normalizado = ((grados % 360) + 360) % 360;

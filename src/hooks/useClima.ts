@@ -8,7 +8,7 @@ import {
   type Cielo,
 } from "@/lib/resolverCielo";
 import type { BusquedaValida } from "@/lib/validarBusqueda";
-import type { ClimaActual, CodigoError, ErrorApi } from "@/types/clima";
+import type { ClimaActual, CodigoError, DiaPronostico, ErrorApi } from "@/types/clima";
 
 export type TipoError = "ciudad" | "servicio";
 
@@ -46,6 +46,22 @@ function esNumeroONulo(valor: unknown): valor is number | null {
   return valor === null || esNumero(valor);
 }
 
+function esDiaPronostico(dia: unknown): dia is DiaPronostico {
+  return (
+    esObjeto(dia) &&
+    typeof dia.fecha === "string" &&
+    esNumero(dia.instante) &&
+    esNumero(dia.minima) &&
+    esNumero(dia.maxima) &&
+    esNumero(dia.codigo) &&
+    esNumero(dia.probabilidadLluvia)
+  );
+}
+
+function esPronosticoValido(pronostico: unknown): pronostico is DiaPronostico[] | null {
+  return pronostico === null || (Array.isArray(pronostico) && pronostico.every(esDiaPronostico));
+}
+
 function esClimaActual(datos: unknown): datos is ClimaActual {
   if (!esObjeto(datos) || !esObjeto(datos.viento) || !esObjeto(datos.condicion)) {
     return false;
@@ -64,7 +80,8 @@ function esClimaActual(datos: unknown): datos is ClimaActual {
     esNumeroONulo(datos.amanecer) &&
     esNumeroONulo(datos.atardecer) &&
     esNumero(datos.zonaHoraria) &&
-    esNumero(datos.momento)
+    esNumero(datos.momento) &&
+    esPronosticoValido(datos.pronostico)
   );
 }
 

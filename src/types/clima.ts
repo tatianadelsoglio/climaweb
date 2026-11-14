@@ -1,3 +1,17 @@
+/** Un día del pronóstico, agrupado por día local de la ciudad. Celsius. */
+export interface DiaPronostico {
+  /** Día local de la ciudad, «2026-11-15». */
+  fecha: string;
+  /** Instante de la franja del mediodía (representa al día y da su fecha local). */
+  instante: number;
+  minima: number;
+  maxima: number;
+  /** Código de condición de OpenWeather del mediodía. */
+  codigo: number;
+  /** De 0 a 100: la mayor del día. */
+  probabilidadLluvia: number;
+}
+
 /** Clima actual normalizado: grados Celsius, km/h y tiempos en segundos Unix (UTC). */
 export interface ClimaActual {
   ciudad: string;
@@ -24,6 +38,8 @@ export interface ClimaActual {
   zonaHoraria: number;
   /** Instante de la consulta. */
   momento: number;
+  /** Próximos días; null si el pronóstico no pudo obtenerse (el clima actual sigue valiendo). */
+  pronostico: DiaPronostico[] | null;
 }
 
 export type CodigoError =

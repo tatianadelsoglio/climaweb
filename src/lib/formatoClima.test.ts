@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import {
   formatearFechaLocal,
   formatearHoraLocal,
+  formatearDiaPronostico,
   formatearHumedad,
   formatearTemperatura,
   formatearViento,
@@ -66,6 +67,22 @@ describe("viento y humedad", () => {
 
   it("formatea la humedad", () => {
     assert.equal(formatearHumedad(58), "58 %");
+  });
+});
+
+describe("formatearDiaPronostico", () => {
+  it("usa el día de la semana y el número en el huso de la ciudad", () => {
+    // 15/11/2026 15:00 UTC = domingo 12:00 en Córdoba.
+    const domingo = Date.UTC(2026, 10, 15, 15, 0) / 1000;
+    assert.equal(formatearDiaPronostico(domingo, CORDOBA, true), "Dom 15");
+    assert.equal(formatearDiaPronostico(domingo, CORDOBA, false), "Dom");
+  });
+
+  it("respeta el huso: cerca de la medianoche UTC el día local es otro", () => {
+    // 16/11/2026 01:00 UTC = domingo 22:00 en Córdoba, pero lunes en Madrid.
+    const instante = Date.UTC(2026, 10, 16, 1, 0) / 1000;
+    assert.equal(formatearDiaPronostico(instante, CORDOBA, true), "Dom 15");
+    assert.equal(formatearDiaPronostico(instante, 3600, true), "Lun 16");
   });
 });
 
