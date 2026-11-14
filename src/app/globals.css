@@ -15,6 +15,9 @@
   --color-panel-ink: #12172A;
   --color-panel-muted: #535A6E;
   --color-panel-highlight: #EBEEFF;
+  --color-panel-accent: #3B4BCC;
+  --color-panel-key: #EEF0F5;
+  --color-panel-warning: #8A4B00;
   --color-danger: #FFB4A8;
   --color-skeleton: #FFFFFF24;
   --color-fg: #FFFFFF;
@@ -69,6 +72,8 @@
   --radius-xl: 24px;
   --radius-2xl: 28px;
   --radius-pill: 9999px;
+
+  --shadow-popover: 0 20px 48px #0A0F2A59;
 }
 
 [data-sky="clear-night"] {

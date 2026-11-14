@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import AnuncioEstado from "@/components/AnuncioEstado";
 import CampoBusqueda from "@/components/CampoBusqueda";
 import Encabezado from "@/components/Encabezado";
@@ -8,17 +8,35 @@ import PantallaCargando from "@/components/PantallaCargando";
 import PantallaError from "@/components/PantallaError";
 import PantallaInicial, { type CiudadSugerida } from "@/components/PantallaInicial";
 import PantallaResultado from "@/components/PantallaResultado";
+import { useAutocompletado } from "@/hooks/useAutocompletado";
 import { useCieloDocumento } from "@/hooks/useCieloDocumento";
-import { useClima } from "@/hooks/useClima";
+import { useClima, type ConsultaCoordenadas } from "@/hooks/useClima";
 import { useFocoEnContenido } from "@/hooks/useFocoEnContenido";
+import { useSugerencias } from "@/hooks/useSugerencias";
 import { useUnidad } from "@/hooks/useUnidad";
 import { interpretarBusqueda } from "@/lib/parsearBusqueda";
+import { textoSugerencia } from "@/lib/sugerencias";
+import type { Sugerencia } from "@/types/geocoding";
+
+function consultaDeSugerencia(sugerencia: Sugerencia): ConsultaCoordenadas {
+  return {
+    lat: sugerencia.lat,
+    lon: sugerencia.lon,
+    etiqueta: sugerencia.nombre,
+    nombre: sugerencia.nombre,
+    pais: sugerencia.pais,
+  };
+}
 
 export default function AppClima() {
   const { resultado, buscar, reintentar } = useClima();
   const [unidad, setUnidad] = useUnidad();
   const [texto, setTexto] = useState("");
   const [errorCampo, setErrorCampo] = useState<string | null>(null);
+  // Sugerencia elegida y el texto que dejó en el campo: si se vuelve a buscar con
+  // ese mismo texto (que no es una búsqueda válida por sí solo) se usa la elegida.
+  const seleccionRef = useRef<{ texto: string; consulta: ConsultaCoordenadas } | null>(null);
+  const autocompletado = useAutocompletado(texto);
   useCieloDocumento(resultado.cielo);
   const { contenedorRef, llevarFocoAlContenido } = useFocoEnContenido(
     resultado.estado,
@@ -31,6 +49,13 @@ export default function AppClima() {
   }
 
   function buscarTexto() {
+    autocompletado.cerrar();
+    const seleccion = seleccionRef.current;
+    if (seleccion && seleccion.texto === texto) {
+      setErrorCampo(null);
+      void buscar(seleccion.consulta);
+      return;
+    }
     const busqueda = interpretarBusqueda(texto);
     if (!busqueda.valida) {
       setErrorCampo(busqueda.mensaje);
@@ -46,12 +71,27 @@ export default function AppClima() {
     void buscar(busqueda);
   }
 
+  function elegirSugerencia(sugerencia: Sugerencia) {
+    const consulta = consultaDeSugerencia(sugerencia);
+    const textoElegido = textoSugerencia(sugerencia);
+    seleccionRef.current = { texto: textoElegido, consulta };
+    cambiarTexto(textoElegido);
+    autocompletado.cerrar();
+    llevarFocoAlContenido();
+    void buscar(consulta);
+  }
+
   function reintentarBusqueda() {
     llevarFocoAlContenido();
     reintentar();
   }
 
   const ciudadInexistente = resultado.estado === "error" && resultado.tipo === "ciudad";
+  // «¿Quisiste decir…?»: lugares parecidos a la ciudad que no se encontró.
+  const { sugerencias: alternativas } = useSugerencias(
+    ciudadInexistente ? { ciudad: resultado.consulta } : null,
+    0,
+  );
 
   return (
     <div
@@ -66,8 +106,13 @@ export default function AppClima() {
             valor={texto}
             mensajeError={errorCampo}
             invalido={errorCampo !== null || ciudadInexistente}
-            onCambiar={cambiarTexto}
+            onCambiar={(valor) => {
+              cambiarTexto(valor);
+              autocompletado.abrir();
+            }}
             onBuscar={buscarTexto}
+            autocompletado={autocompletado}
+            onElegirSugerencia={elegirSugerencia}
           />
         }
       />
@@ -82,6 +127,8 @@ export default function AppClima() {
           <PantallaError
             tipo={resultado.tipo}
             consulta={resultado.consulta}
+            alternativas={alternativas}
+            onElegirAlternativa={elegirSugerencia}
             onReintentar={reintentarBusqueda}
           />
         )}

@@ -25,7 +25,7 @@ export default function Encabezado({ buscador, unidad, onCambiarUnidad }: Encabe
       </p>
 
       {/* El buscador va antes en el DOM para que el orden de tabulación siga al visual. */}
-      <div className="col-span-2 row-start-2 flex items-start gap-sm pt-sm lg:col-span-1 lg:col-start-2 lg:row-start-1 lg:justify-center lg:gap-md lg:pt-0">
+      <div className="relative col-span-2 row-start-2 flex items-start gap-sm pt-sm lg:static lg:col-span-1 lg:col-start-2 lg:row-start-1 lg:justify-center lg:gap-md lg:pt-0">
         {buscador}
         <BotonUbicacion variante="encabezado" />
       </div>

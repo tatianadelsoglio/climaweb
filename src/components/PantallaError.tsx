@@ -1,9 +1,15 @@
 import { CloudOff, MapPinOff, RefreshCw } from "lucide-react";
+import ChipCiudad from "@/components/ChipCiudad";
 import type { TipoError } from "@/hooks/useClima";
+import { etiquetasCortas } from "@/lib/sugerencias";
+import type { Sugerencia } from "@/types/geocoding";
 
 interface PantallaErrorProps {
   tipo: TipoError;
   consulta: string;
+  /** Lugares parecidos a la ciudad que no se encontró («¿Quisiste decir…?»). */
+  alternativas: Sugerencia[];
+  onElegirAlternativa: (sugerencia: Sugerencia) => void;
   onReintentar: () => void;
 }
 
@@ -11,8 +17,16 @@ const MENSAJE_SERVICIO =
   "No es tu búsqueda: no pudimos conectar con el proveedor de datos. Probá de nuevo en unos segundos.";
 
 /** El detalle del error lo anuncia AnuncioEstado. */
-export default function PantallaError({ tipo, consulta, onReintentar }: PantallaErrorProps) {
+export default function PantallaError({
+  tipo,
+  consulta,
+  alternativas,
+  onElegirAlternativa,
+  onReintentar,
+}: PantallaErrorProps) {
   const esCiudad = tipo === "ciudad";
+  const hayAlternativas = esCiudad && alternativas.length > 0;
+  const etiquetas = etiquetasCortas(alternativas);
   const Icono = esCiudad ? MapPinOff : CloudOff;
   const colorTono = esCiudad ? "text-danger" : "text-accent";
 
@@ -33,10 +47,13 @@ export default function PantallaError({ tipo, consulta, onReintentar }: Pantalla
       <p className="text-button leading-[1.5] text-fg-muted lg:w-[640px] lg:max-w-full lg:text-subtitle">
         {esCiudad ? (
           <>
-            <span className="lg:hidden">Revisá cómo está escrita o agregá el país (“Córdoba, AR”).</span>
+            <span className="lg:hidden">
+              Revisá cómo está escrita o agregá el país (“Córdoba, AR”).
+              {hayAlternativas && " ¿Quisiste decir…?"}
+            </span>
             <span className="hidden lg:inline">
               Puede que esté mal escrita o que no exista con ese nombre. Probá agregar el país
-              (“Córdoba, AR”).
+              (“Córdoba, AR”){hayAlternativas ? " o elegí una de estas:" : "."}
             </span>
           </>
         ) : (
@@ -44,8 +61,20 @@ export default function PantallaError({ tipo, consulta, onReintentar }: Pantalla
         )}
       </p>
 
-      {/* Lugar de las sugerencias «¿Quisiste decir…?» (Fase 3b, autocompletado). */}
-      {esCiudad && <div aria-hidden className="hidden lg:block lg:h-control" />}
+      {/* En desktop el lugar de las sugerencias se reserva siempre, para que el contenido no salte. */}
+      {esCiudad && (
+        <div className="lg:min-h-control">
+          {hayAlternativas && (
+            <ul aria-label="¿Quisiste decir…?" className="flex flex-col items-start gap-sm lg:flex-row lg:flex-wrap">
+              {alternativas.map((alternativa, i) => (
+                <li key={`${alternativa.lat},${alternativa.lon}`}>
+                  <ChipCiudad nombre={etiquetas[i]} onElegir={() => onElegirAlternativa(alternativa)} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       {!esCiudad && (
         <div className="flex flex-col gap-lg lg:flex-row lg:items-center lg:pt-sm">
