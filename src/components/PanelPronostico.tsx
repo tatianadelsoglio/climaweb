@@ -11,6 +11,18 @@ interface PanelPronosticoProps {
   unidad: Unidad;
 }
 
+function Lluvia({ porcentaje, className }: { porcentaje: number; className: string }) {
+  return (
+    <p className={`items-center gap-2xs text-caption text-fg-muted ${className}`}>
+      <Umbrella aria-hidden className="size-3.5" />
+      <span>
+        <span className="sr-only">Probabilidad de lluvia </span>
+        {porcentaje} %
+      </span>
+    </p>
+  );
+}
+
 function Dia({
   dia,
   zonaHoraria,
@@ -32,7 +44,7 @@ function Dia({
         className="order-2 size-7 shrink-0 lg:order-1 lg:size-9"
       />
       <div className="contents lg:order-2 lg:flex lg:min-w-0 lg:flex-1 lg:flex-col lg:gap-3xs">
-        <p className="order-1 text-caption font-semibold text-fg-muted lg:order-none">
+        <p className="order-1 text-caption font-semibold whitespace-nowrap text-fg-muted lg:order-none">
           <span className="lg:hidden">{etiquetaCorta}</span>
           <span className="hidden lg:inline">{etiquetaLarga}</span>
         </p>
@@ -46,14 +58,16 @@ function Dia({
             {formatearTemperatura(dia.minima, unidad)}
           </span>
         </p>
+        {/* Con poco ancho (lg a xl) la lluvia va debajo del texto; desde xl, a la derecha. */}
+        <Lluvia
+          porcentaje={dia.probabilidadLluvia}
+          className="order-4 hidden lg:order-none lg:flex xl:hidden"
+        />
       </div>
-      <p className="order-4 hidden shrink-0 items-center gap-2xs text-caption text-fg-muted lg:flex">
-        <Umbrella aria-hidden className="size-3.5" />
-        <span>
-          <span className="sr-only">Probabilidad de lluvia </span>
-          {dia.probabilidadLluvia} %
-        </span>
-      </p>
+      <Lluvia
+        porcentaje={dia.probabilidadLluvia}
+        className="order-4 hidden shrink-0 xl:flex"
+      />
     </li>
   );
 }
