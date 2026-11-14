@@ -1,11 +1,23 @@
-import { Droplets, Sunrise, Sunset, Umbrella, Wind, type LucideIcon } from "lucide-react";
+import {
+  ArrowUp,
+  Droplets,
+  Sunrise,
+  Sunset,
+  Umbrella,
+  Wind,
+  type LucideIcon,
+} from "lucide-react";
 import ArcoSolar from "@/components/ArcoSolar";
 import { progresoSolar } from "@/lib/posicionSolar";
 import {
   formatearHoraLocal,
   formatearPorcentaje,
-  formatearViento,
+  describirViento,
+  formatearOrigenViento,
+  formatearVelocidad,
+  rotacionFlechaViento,
 } from "@/lib/formatoClima";
+import type { ReactNode } from "react";
 import type { EstadoPronostico } from "@/hooks/usePronostico";
 import type { ClimaActual } from "@/types/clima";
 
@@ -14,7 +26,43 @@ interface PanelDatosProps {
   pronostico: EstadoPronostico;
 }
 
-function Dato({ icono: Icono, etiqueta, valor }: { icono: LucideIcon; etiqueta: string; valor: string }) {
+/**
+ * Viento: flecha que gira hacia donde va el viento, velocidad y de dónde viene
+ * («del O»). Con la dirección en una línea aparte y en sans, la «O» no se
+ * confunde con un cero de la tipografía display. El conjunto se lee entero con
+ * un aria-label («Viento de 19 km/h del oeste»).
+ */
+function Viento({ velocidad, direccion }: { velocidad: number; direccion: number | null }) {
+  return (
+    <span role="img" aria-label={describirViento(velocidad, direccion)} className="flex flex-col">
+      <span className="flex items-center gap-xs">
+        {direccion !== null && (
+          <ArrowUp
+            aria-hidden
+            style={{ transform: `rotate(${rotacionFlechaViento(direccion)}deg)` }}
+            className="size-5 shrink-0 text-accent lg:size-6"
+          />
+        )}
+        {formatearVelocidad(velocidad)}
+      </span>
+      {direccion !== null && (
+        <span className="font-sans text-caption font-normal text-fg-muted lg:text-body">
+          {formatearOrigenViento(direccion)}
+        </span>
+      )}
+    </span>
+  );
+}
+
+function Dato({
+  icono: Icono,
+  etiqueta,
+  valor,
+}: {
+  icono: LucideIcon;
+  etiqueta: string;
+  valor: ReactNode;
+}) {
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-2xs lg:gap-xs">
       <dt className="flex items-center gap-xs text-caption text-fg-muted lg:gap-sm">
@@ -60,7 +108,7 @@ export default function PanelDatos({ clima, pronostico }: PanelDatosProps) {
         <Dato
           icono={Wind}
           etiqueta="Viento"
-          valor={formatearViento(clima.viento.velocidad, clima.viento.direccion)}
+          valor={<Viento velocidad={clima.viento.velocidad} direccion={clima.viento.direccion} />}
         />
         <Dato
           icono={Umbrella}

@@ -6,7 +6,10 @@ import {
   formatearDiaPronostico,
   formatearPorcentaje,
   formatearTemperatura,
-  formatearViento,
+  describirViento,
+  formatearOrigenViento,
+  formatearVelocidad,
+  rotacionFlechaViento,
   nombrePais,
   puntoCardinal,
 } from "./formatoClima.ts";
@@ -60,9 +63,32 @@ describe("viento y humedad", () => {
     assert.equal(puntoCardinal(-45), "NO");
   });
 
-  it("formatea velocidad con o sin dirección", () => {
-    assert.equal(formatearViento(14.2, 135), "14 km/h SE");
-    assert.equal(formatearViento(9, null), "9 km/h");
+  it("formatea la velocidad", () => {
+    assert.equal(formatearVelocidad(14.2), "14 km/h");
+    assert.equal(formatearVelocidad(0.4), "0 km/h");
+  });
+
+  it("de dónde viene el viento: «del O» es el oeste, no un cero", () => {
+    assert.equal(formatearOrigenViento(270), "del O");
+    assert.equal(formatearOrigenViento(135), "del SE");
+    assert.equal(formatearOrigenViento(0), "del N");
+  });
+
+  it("la flecha apunta hacia donde va el viento (opuesto a su origen)", () => {
+    assert.equal(rotacionFlechaViento(0), 180); // viento del norte → va hacia el sur
+    assert.equal(rotacionFlechaViento(270), 90); // del oeste → va hacia el este
+    assert.equal(rotacionFlechaViento(180), 0);
+    assert.equal(rotacionFlechaViento(90), 270);
+    assert.equal(rotacionFlechaViento(359), 179);
+  });
+
+  it("descripción completa para lectores de pantalla", () => {
+    assert.equal(describirViento(19, 270), "Viento de 19 km/h del oeste");
+    assert.equal(describirViento(14.2, 135), "Viento de 14 km/h del sureste");
+    assert.equal(describirViento(7, 0), "Viento de 7 km/h del norte");
+    assert.equal(describirViento(7, 315), "Viento de 7 km/h del noroeste");
+    assert.equal(describirViento(9, null), "Viento de 9 km/h");
+    assert.equal(describirViento(9, -90), "Viento de 9 km/h del oeste");
   });
 
   it("formatea un porcentaje", () => {

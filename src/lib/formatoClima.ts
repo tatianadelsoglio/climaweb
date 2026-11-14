@@ -1,6 +1,16 @@
 import { convertirTemperatura, type Unidad } from "./unidades.ts";
 
 const PUNTOS_CARDINALES = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"] as const;
+const NOMBRES_CARDINALES = [
+  "norte",
+  "noreste",
+  "este",
+  "sureste",
+  "sur",
+  "suroeste",
+  "oeste",
+  "noroeste",
+] as const;
 const SIGNO_MENOS = "−";
 
 function capitalizar(texto: string): string {
@@ -78,10 +88,28 @@ export function puntoCardinal(grados: number): string {
   return PUNTOS_CARDINALES[Math.round(normalizado / 45) % PUNTOS_CARDINALES.length];
 }
 
-/** "14 km/h SE" o "14 km/h" si no hay dirección. */
-export function formatearViento(kmh: number, direccion: number | null): string {
-  const velocidad = `${Math.round(kmh)} km/h`;
-  return direccion === null ? velocidad : `${velocidad} ${puntoCardinal(direccion)}`;
+/** 14.2 → "14 km/h". */
+export function formatearVelocidad(kmh: number): string {
+  return `${Math.round(kmh)} km/h`;
+}
+
+/** 135 → "del SE", 270 → "del O": de dónde viene el viento (los grados son meteorológicos). */
+export function formatearOrigenViento(grados: number): string {
+  return `del ${puntoCardinal(grados)}`;
+}
+
+/** Rotación en grados de una flecha que apunta hacia donde va el viento (opuesto a su origen). */
+export function rotacionFlechaViento(grados: number): number {
+  return (((grados + 180) % 360) + 360) % 360;
+}
+
+/** "Viento de 19 km/h del oeste" (o sin dirección), completo para lectores de pantalla. */
+export function describirViento(kmh: number, grados: number | null): string {
+  const velocidad = `Viento de ${formatearVelocidad(kmh)}`;
+  if (grados === null) return velocidad;
+  const normalizado = ((grados % 360) + 360) % 360;
+  const nombre = NOMBRES_CARDINALES[Math.round(normalizado / 45) % NOMBRES_CARDINALES.length];
+  return `${velocidad} del ${nombre}`;
 }
 
 export function formatearPorcentaje(porcentaje: number): string {
