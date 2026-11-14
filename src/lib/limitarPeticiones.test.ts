@@ -17,9 +17,16 @@ describe("ipDelCliente", () => {
     expect(ipDelCliente(new Headers({ "x-real-ip": "198.51.100.2" }))).toBe("198.51.100.2");
   });
 
-  it("sin encabezados, una clave compartida", () => {
-    expect(ipDelCliente(new Headers())).toBe("desconocida");
-    expect(ipDelCliente(new Headers({ "x-forwarded-for": " " }))).toBe("desconocida");
+  it("sin encabezados (o vacíos), no hay IP conocida", () => {
+    expect(ipDelCliente(new Headers())).toBeNull();
+    expect(ipDelCliente(new Headers({ "x-forwarded-for": " " }))).toBeNull();
+    expect(ipDelCliente(new Headers({ "x-real-ip": "  " }))).toBeNull();
+  });
+
+  it("ignora los espacios y los valores siguientes de x-forwarded-for", () => {
+    expect(ipDelCliente(new Headers({ "x-forwarded-for": "  203.0.113.7  ,10.0.0.1,10.0.0.2" }))).toBe(
+      "203.0.113.7",
+    );
   });
 });
 
@@ -51,6 +58,14 @@ describe("limitarPorIp", () => {
     expect(cuerpo.error.mensaje).toContain("segundos");
   });
 
+  it("sin IP conocida no limita nunca (no se comparte un cubo entre todos)", async () => {
+    const almacen = new AlmacenEnMemoria();
+    for (let i = 0; i < LIMITES.weather.capacidad * 3; i++) {
+      expect(await limitarPorIp(pedido(), "weather", almacen, 0)).toBeNull();
+    }
+    expect(almacen.tamano).toBe(0);
+  });
+
   it("cada ruta y cada IP tienen su propio cubo", async () => {
     const almacen = new AlmacenEnMemoria();
     const ip = { "x-forwarded-for": "1.1.1.1" };
@@ -67,7 +82,12 @@ describe("limitarPorIp", () => {
     const externo: AlmacenLimite = {
       consumir: async () => ({ permitido: false, reintentarEnSegundos: 7 }),
     };
-    const respuesta = await limitarPorIp(pedido(), "geocode", externo, 0);
+    const respuesta = await limitarPorIp(
+      pedido({ "x-forwarded-for": "1.1.1.1" }),
+      "geocode",
+      externo,
+      0,
+    );
     expect(respuesta?.status).toBe(429);
     expect(respuesta?.headers.get("Retry-After")).toBe("7");
   });
