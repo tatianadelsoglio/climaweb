@@ -1,6 +1,8 @@
 import Image from "next/image";
 
 const URL_GITHUB = "https://github.com/tatianadelsoglio";
+const URL_OPENWEATHER = "https://openweathermap.org";
+const URL_OPEN_METEO = "https://open-meteo.com";
 const ANIO = 2026;
 
 /**
@@ -11,35 +13,48 @@ const ANIO = 2026;
  */
 const ICONO = "/brand/tamade-icon-white.png";
 
+// Subrayado tenue siempre visible (un link no puede distinguirse solo por color: el
+// texto del pie y sus links comparten color) y pleno en hover y foco.
+const CLASE_LINK =
+  "underline decoration-fg-muted/40 underline-offset-2 hover:decoration-fg focus-visible:decoration-fg";
+
+function LinkExterno({ href, children }: { href: string; children: string }) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" className={CLASE_LINK}>
+      {children}
+      <span className="sr-only"> (se abre en otra pestaña)</span>
+    </a>
+  );
+}
+
 /**
- * Pie de página estilo copyright, al final del contenido y alineado a su grilla
- * (no es fijo ni flotante, así que no tapa nada). Texto de 12 px en
- * --color-fg-muted: contraste ≥ 5,8:1 sobre los 8 cielos (AA pide 4,5:1). El
- * link al GitHub está solo en el nombre y se subraya en hover y en foco.
+ * Pie de página estilo copyright, centrado, al final del contenido (no es fijo
+ * ni flotante, así que no tapa nada). Texto de 12 px en --color-fg-muted:
+ * contraste ≥ 5,8:1 sobre los 8 cielos (AA pide 4,5:1), por eso la segunda línea
+ * no se atenúa más. La segunda línea acredita a los proveedores de datos
+ * (atribución requerida; Open-Meteo es CC BY 4.0).
  */
 export default function Firma() {
   return (
-    <footer className="flex items-center gap-sm px-xl pt-xl pb-xl text-micro text-fg-muted lg:px-gutter lg:pb-2xl">
-      {/* Decorativo: la marca ya está en el texto. */}
-      <Image
-        src={ICONO}
-        alt=""
-        width={16}
-        height={14}
-        className="h-3.5 w-4 shrink-0 opacity-70"
-      />
+    <footer className="flex flex-col items-center gap-3xs px-xl pt-xl pb-xl text-center text-micro text-fg-muted lg:pb-2xl">
+      <p className="text-balance">
+        © {ANIO} Atmósfera · Diseñado y desarrollado por{" "}
+        <LinkExterno href={URL_GITHUB}>Tatiana Delsoglio</LinkExterno> ·{" "}
+        <span className="inline-flex items-center gap-xs align-middle whitespace-nowrap">
+          TAMADE
+          {/* Decorativo: la marca ya está en el texto. */}
+          <Image
+            src={ICONO}
+            alt=""
+            width={20}
+            height={18}
+            className="h-[18px] w-5 shrink-0 opacity-70"
+          />
+        </span>
+      </p>
       <p>
-        © {ANIO} Atmósfera · Hecho por{" "}
-        <a
-          href={URL_GITHUB}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline-offset-2 hover:underline focus-visible:underline"
-        >
-          Tatiana Delsoglio
-          <span className="sr-only"> (se abre en otra pestaña)</span>
-        </a>{" "}
-        · TAMADE
+        Datos: <LinkExterno href={URL_OPENWEATHER}>OpenWeather</LinkExterno> ·{" "}
+        <LinkExterno href={URL_OPEN_METEO}>Open-Meteo</LinkExterno>
       </p>
     </footer>
   );
