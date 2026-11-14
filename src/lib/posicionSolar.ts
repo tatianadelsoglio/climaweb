@@ -3,7 +3,9 @@ import type { ClimaActual } from "../types/clima";
 
 const SEGUNDOS_POR_DIA = 86_400;
 
-type DatosSolares = Pick<ClimaActual, "momento" | "amanecer" | "atardecer" | "zonaHoraria">;
+type DatosSolares = Pick<ClimaActual, "momento" | "amanecer" | "atardecer" | "zonaHoraria"> & {
+  coordenadas?: ClimaActual["coordenadas"];
+};
 
 /**
  * Cuánto del día solar pasó, de 0 (amanecer) a 1 (atardecer), con la hora

@@ -1,5 +1,6 @@
 import { TTL, normalizarTexto, opcionesDeCache } from "@/lib/cacheProveedores";
 import { formatearCoordenada } from "@/lib/coordenadas";
+import { normalizarHorarioSolar } from "@/lib/horarioSolar";
 import { ProveedorError, pedirJson } from "@/lib/proveedorHttp";
 import type { BusquedaValida, CoordenadasValidas } from "@/lib/validarBusqueda";
 import type { ClimaActual } from "@/types/clima";
@@ -59,11 +60,6 @@ function esRespuestaValida(datos: unknown): datos is OpenWeatherRespuesta {
   );
 }
 
-/** OpenWeather omite (o manda 0) amanecer y atardecer durante el día o la noche polar. */
-function instanteOpcional(valor: unknown): number | null {
-  return esNumero(valor) && valor > 0 ? valor : null;
-}
-
 async function pedirClima(url: URL): Promise<OpenWeatherRespuesta> {
   const datos = await pedirJson(url, opcionesDeCache(TTL.clima));
   if (!esRespuestaValida(datos)) {
@@ -112,8 +108,7 @@ export async function obtenerClima(
       direccion: esNumero(datos.wind.deg) ? datos.wind.deg : null,
     },
     condicion: { codigo: condicion.id },
-    amanecer: instanteOpcional(datos.sys.sunrise),
-    atardecer: instanteOpcional(datos.sys.sunset),
+    ...normalizarHorarioSolar(datos.sys.sunrise, datos.sys.sunset),
     zonaHoraria: datos.timezone,
     momento: Math.floor(Date.now() / 1000),
     coordenadas: { lat: datos.coord.lat, lon: datos.coord.lon },

@@ -10,7 +10,16 @@ const CORDOBA = {
 const MEDIODIA_CORDOBA = Date.UTC(2026, 10, 14, 15, 42) / 1000; // 12:42 local
 const NOCHE_CORDOBA = Date.UTC(2026, 10, 15, 1, 30) / 1000; // 22:30 local
 
-function datos(codigo: number, momento: number, extra: Partial<typeof CORDOBA> = {}) {
+function datos(
+  codigo: number,
+  momento: number,
+  extra: {
+    zonaHoraria?: number;
+    amanecer?: number | null;
+    atardecer?: number | null;
+    coordenadas?: { lat: number; lon: number };
+  } = {},
+) {
   return {
     condicion: { codigo },
     momento,
@@ -127,6 +136,59 @@ describe("esDeDia", () => {
     const polar = { amanecer: null, atardecer: null, zonaHoraria: 0 };
     expect(esDeDia({ ...polar, momento: Date.UTC(2026, 5, 21, 12) / 1000 })).toBe(true);
     expect(esDeDia({ ...polar, momento: Date.UTC(2026, 5, 21, 23) / 1000 })).toBe(false);
+  });
+
+  describe("sol de medianoche y noche polar (Tromsø, 69,65° N, UTC+1)", () => {
+    const TROMSO = { lat: 69.65, lon: 18.96 };
+    const sinHorario = { amanecer: null, atardecer: null, zonaHoraria: 3600, coordenadas: TROMSO };
+    const iguales = {
+      amanecer: Date.UTC(2026, 5, 21, 0, 0) / 1000,
+      atardecer: Date.UTC(2026, 5, 21, 0, 0) / 1000,
+      zonaHoraria: 3600,
+      coordenadas: TROMSO,
+    };
+    const junio = (hora: number) => Date.UTC(2026, 5, 21, hora) / 1000;
+    const diciembre = (hora: number) => Date.UTC(2026, 11, 21, hora) / 1000;
+
+    it("sol de medianoche: es de día a las 00:00 locales aunque falte el horario", () => {
+      // 23:00 UTC = 00:00 locales del 22/06.
+      expect(esDeDia({ ...sinHorario, momento: junio(23) })).toBe(true);
+      expect(resolverCielo(datos(800, junio(23), sinHorario))).toBe("clear-day");
+    });
+
+    it("noche polar: es de noche al mediodía local aunque falte el horario", () => {
+      // 11:00 UTC = 12:00 locales.
+      expect(esDeDia({ ...sinHorario, momento: diciembre(11) })).toBe(false);
+      expect(resolverCielo(datos(800, diciembre(11), sinHorario))).toBe("clear-night");
+      expect(resolverCielo(datos(804, diciembre(11), sinHorario))).toBe("clouds-night");
+    });
+
+    it("amanecer y atardecer iguales se tratan como sin horario (decide la elevación)", () => {
+      expect(esDeDia({ ...iguales, momento: junio(23) })).toBe(true);
+      expect(esDeDia({ ...iguales, momento: diciembre(11) })).toBe(false);
+    });
+
+    it("con horario válido, manda el horario (no la elevación)", () => {
+      // En Tromsø a las 12:00 locales de junio, con un horario que dice noche.
+      const horarioNocturno = {
+        amanecer: Date.UTC(2026, 5, 21, 20, 0) / 1000,
+        atardecer: Date.UTC(2026, 5, 21, 22, 0) / 1000,
+        zonaHoraria: 3600,
+        coordenadas: TROMSO,
+      };
+      expect(esDeDia({ ...horarioNocturno, momento: junio(11) })).toBe(false);
+    });
+
+    it("sin horario ni coordenadas, usa las horas fijas de la ciudad (6 a 20)", () => {
+      const sinCoordenadas = { amanecer: null, atardecer: null, zonaHoraria: 3600 };
+      expect(esDeDia({ ...sinCoordenadas, momento: junio(11) })).toBe(true);
+      expect(esDeDia({ ...sinCoordenadas, momento: junio(23) })).toBe(false);
+    });
+
+    it("las condiciones de lluvia, nieve y niebla no dependen del día o la noche", () => {
+      expect(resolverCielo(datos(601, diciembre(11), sinHorario))).toBe("snow");
+      expect(resolverCielo(datos(741, junio(23), sinHorario))).toBe("mist");
+    });
   });
 
   it("husos con media hora y desplazamientos que cruzan la medianoche", () => {

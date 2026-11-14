@@ -1,3 +1,4 @@
+import { esDeDiaPorElevacion } from "@/lib/elevacionSolar";
 import type { ClimaActual } from "@/types/clima";
 
 export type Cielo =
@@ -19,7 +20,10 @@ export const CIELO_ERROR_SERVICIO: Cielo = "rain";
 type DatosCielo = Pick<
   ClimaActual,
   "condicion" | "momento" | "amanecer" | "atardecer" | "zonaHoraria"
->;
+> & {
+  /** Ubicación: permite decidir día o noche por la elevación del sol si falta el horario. */
+  coordenadas?: ClimaActual["coordenadas"];
+};
 
 const SEGUNDOS_POR_DIA = 86_400;
 const SEGUNDOS_POR_HORA = 3_600;
@@ -34,25 +38,32 @@ export function segundosDelDiaLocal(instante: number, zonaHoraria: number): numb
 }
 
 /**
- * Indica si es de día en la ciudad, con su amanecer, atardecer y huso horario
- * (nunca con el reloj del usuario). Se comparan horas del día locales porque
- * OpenWeather puede informar el amanecer o el atardecer de otra fecha.
+ * Indica si es de día en la ciudad (nunca con el reloj del usuario).
+ *
+ * 1. Con amanecer y atardecer: se comparan horas del día locales (con el huso de la
+ *    ciudad) porque OpenWeather puede informarlos de otra fecha.
+ * 2. Sin horario utilizable (sol de medianoche, noche polar: faltan, son 0 o son
+ *    iguales) y con coordenadas: por la elevación aproximada del sol. En verano
+ *    polar da día a medianoche, y en invierno polar noche al mediodía.
+ * 3. Sin horario ni coordenadas: horas fijas de la ciudad (6 a 20).
  */
 export function esDeDia({
   momento,
   amanecer,
   atardecer,
   zonaHoraria,
+  coordenadas,
 }: Omit<DatosCielo, "condicion">): boolean {
   const ahora = segundosDelDiaLocal(momento, zonaHoraria);
+  const inicio = amanecer === null ? null : segundosDelDiaLocal(amanecer, zonaHoraria);
+  const fin = atardecer === null ? null : segundosDelDiaLocal(atardecer, zonaHoraria);
 
-  if (amanecer === null || atardecer === null) {
+  if (inicio === null || fin === null || inicio === fin) {
+    if (coordenadas) return esDeDiaPorElevacion(momento, coordenadas.lat, coordenadas.lon);
     const hora = ahora / SEGUNDOS_POR_HORA;
     return hora >= HORA_INICIO_DIA && hora < HORA_FIN_DIA;
   }
 
-  const inicio = segundosDelDiaLocal(amanecer, zonaHoraria);
-  const fin = segundosDelDiaLocal(atardecer, zonaHoraria);
   return inicio <= fin
     ? ahora >= inicio && ahora < fin
     : ahora >= inicio || ahora < fin;
