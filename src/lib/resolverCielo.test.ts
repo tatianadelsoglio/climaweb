@@ -57,6 +57,39 @@ describe("resolverCielo", () => {
   });
 });
 
+/** Todos los códigos de condición publicados por OpenWeather (Current Weather 2.5). */
+const CODIGOS_OPENWEATHER = {
+  tormenta: [200, 201, 202, 210, 211, 212, 221, 230, 231, 232],
+  llovizna: [300, 301, 302, 310, 311, 312, 313, 314, 321],
+  lluvia: [500, 501, 502, 503, 504, 511, 520, 521, 522, 531],
+  nieve: [600, 601, 602, 611, 612, 613, 615, 616, 620, 621, 622],
+  atmosfera: [701, 711, 721, 731, 741, 751, 761, 762, 771, 781],
+  despejado: [800],
+  nubes: [801, 802, 803, 804],
+} as const;
+
+describe("mapeo de todos los códigos de OpenWeather a cielos", () => {
+  const esperado: Record<keyof typeof CODIGOS_OPENWEATHER, [dia: string, noche: string]> = {
+    tormenta: ["storm", "storm"],
+    llovizna: ["rain", "rain"],
+    lluvia: ["rain", "rain"],
+    nieve: ["snow", "snow"],
+    atmosfera: ["mist", "mist"],
+    despejado: ["clear-day", "clear-night"],
+    nubes: ["clouds-day", "clouds-night"],
+  };
+
+  for (const [grupo, codigos] of Object.entries(CODIGOS_OPENWEATHER)) {
+    const [dia, noche] = esperado[grupo as keyof typeof CODIGOS_OPENWEATHER];
+    it(`${grupo} (${codigos[0]}–${codigos.at(-1)}) → ${dia} / ${noche}`, () => {
+      for (const codigo of codigos) {
+        assert.equal(resolverCielo(datos(codigo, MEDIODIA_CORDOBA)), dia, `${codigo} de día`);
+        assert.equal(resolverCielo(datos(codigo, NOCHE_CORDOBA)), noche, `${codigo} de noche`);
+      }
+    });
+  }
+});
+
 describe("esDeDia", () => {
   it("usa los límites exactos: amanecer incluido, atardecer excluido", () => {
     assert.equal(esDeDia(datos(800, CORDOBA.amanecer - 1)), false);
