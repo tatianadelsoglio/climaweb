@@ -38,12 +38,18 @@ export interface AlmacenLimite {
   ): ResultadoLimite | Promise<ResultadoLimite>;
 }
 
-interface Cubo {
+/**
+ * Estado de un cubo. Guarda su propia configuración: el almacén es único y mezcla
+ * claves de rutas con límites distintos, y el barrido tiene que juzgar a cada cubo con
+ * la suya, no con la de la ruta que casualmente lo dispara.
+ */
+interface Cubo extends ConfigLimite {
   fichas: number;
   ultimoMs: number;
 }
 
-const MAX_CLAVES = 10_000;
+/** Tope de claves en memoria; al pasarlo se descartan las menos recientes. */
+export const MAX_CLAVES = 10_000;
 const BARRIDO_CADA = 500;
 
 export class AlmacenEnMemoria implements AlmacenLimite {
@@ -51,7 +57,7 @@ export class AlmacenEnMemoria implements AlmacenLimite {
   private llamadas = 0;
 
   consumir(clave: string, config: ConfigLimite, ahoraMs: number): ResultadoLimite {
-    if (++this.llamadas % BARRIDO_CADA === 0) this.barrer(config, ahoraMs);
+    if (++this.llamadas % BARRIDO_CADA === 0) this.barrer(ahoraMs);
 
     const previo = this.cubos.get(clave);
     const transcurridoS = previo ? Math.max(0, (ahoraMs - previo.ultimoMs) / 1000) : 0;
@@ -62,11 +68,11 @@ export class AlmacenEnMemoria implements AlmacenLimite {
     // Reinsertar mueve la clave al final: el orden del Map es el de uso reciente.
     this.cubos.delete(clave);
     if (fichas >= 1) {
-      this.cubos.set(clave, { fichas: fichas - 1, ultimoMs: ahoraMs });
+      this.cubos.set(clave, { ...config, fichas: fichas - 1, ultimoMs: ahoraMs });
       this.acotar();
       return { permitido: true, reintentarEnSegundos: 0 };
     }
-    this.cubos.set(clave, { fichas, ultimoMs: ahoraMs });
+    this.cubos.set(clave, { ...config, fichas, ultimoMs: ahoraMs });
     this.acotar();
     return {
       permitido: false,
@@ -74,11 +80,11 @@ export class AlmacenEnMemoria implements AlmacenLimite {
     };
   }
 
-  /** Descarta los cubos que ya se rellenaron del todo: equivalen a no tener estado. */
-  private barrer(config: ConfigLimite, ahoraMs: number): void {
+  /** Descarta los cubos que ya se rellenaron del todo (con SU capacidad y ritmo): equivalen a no tener estado. */
+  private barrer(ahoraMs: number): void {
     for (const [clave, cubo] of this.cubos) {
-      const rellenoS = (ahoraMs - cubo.ultimoMs) / 1000;
-      if (cubo.fichas + rellenoS * config.fichasPorSegundo >= config.capacidad) {
+      const rellenoS = Math.max(0, (ahoraMs - cubo.ultimoMs) / 1000);
+      if (cubo.fichas + rellenoS * cubo.fichasPorSegundo >= cubo.capacidad) {
         this.cubos.delete(clave);
       }
     }
