@@ -20,10 +20,6 @@
   --color-panel-warning: #8A4B00;
   --color-danger: #FFB4A8;
   --color-skeleton: #FFFFFF24;
-  /* Firma del autor: #12172A al 60 % (vidrio) y el mismo color sólido de respaldo. */
-  --color-firma-vidrio: #12172A99;
-  --color-firma-solido: #12172A;
-  --blur-firma: 24px;
   --color-fg: #FFFFFF;
   --color-fg-muted: #FFFFFFE0;
 
@@ -216,26 +212,6 @@
   @media (prefers-reduced-transparency: reduce) {
     backdrop-filter: none;
     background-color: color-mix(in srgb, var(--color-fg) 16%, var(--color-sky-top));
-  }
-}
-
-/*
- * Chip de la firma del autor: vidrio oscuro (fondo al 60 % + blur + borde
- * --color-glass-line). Sin backdrop-filter, o con prefers-reduced-transparency,
- * el fondo pasa a sólido para no perder contraste.
- */
-@utility vidrio-firma {
-  background-color: var(--color-firma-solido);
-  border: 1px solid var(--color-glass-line);
-
-  @supports (backdrop-filter: blur(1px)) {
-    background-color: var(--color-firma-vidrio);
-    backdrop-filter: blur(var(--blur-firma));
-  }
-
-  @media (prefers-reduced-transparency: reduce) {
-    backdrop-filter: none;
-    background-color: var(--color-firma-solido);
   }
 }
 

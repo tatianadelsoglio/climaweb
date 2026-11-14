@@ -1,45 +1,46 @@
 import Image from "next/image";
 
 const URL_GITHUB = "https://github.com/tatianadelsoglio";
+const ANIO = 2026;
 
 /**
- * Firma del autor: chip de vidrio oscuro (utilidad `vidrio-firma` en
- * globals.css) con el ícono de TAMADE y un link al GitHub.
- *
- * Contraste (WCAG 2.1 AA) medido sobre los 8 cielos, con el fondo al 60 %
- * compuesto sobre el peor punto del degradado: texto blanco ≥ 12,8:1 (AA pide
- * 4,5:1) e ícono a color ≥ 3,4:1 en su tono más oscuro (AA pide 3:1 para
- * gráficos). Con transparencia reducida o sin blur el fondo es sólido (#12172A):
- * texto 17,8:1 e ícono 4,8:1.
- *
- * Si el ícono a color dejara de contrastar (por ejemplo, con un cielo nuevo más
- * claro), se cambia a la versión blanca: reemplazar `src` por
- * "/brand/tamade-icon-white.png". Está en public/brand/ y tiene el mismo tamaño.
+ * Ícono decorativo de TAMADE en blanco (public/brand/). Si hiciera falta la
+ * versión a color, reemplazar por "/brand/tamade-icon.png": tiene el mismo
+ * tamaño. En blanco y con opacidad reducida contrasta con los 8 cielos y no
+ * le gana al texto.
  */
-const ICONO = "/brand/tamade-icon.png";
+const ICONO = "/brand/tamade-icon-white.png";
 
 /**
- * Va al final de la página, en el flujo (no fija): abajo a la derecha en
- * desktop y centrada en mobile, sin tapar contenido.
+ * Pie de página estilo copyright, al final del contenido y alineado a su grilla
+ * (no es fijo ni flotante, así que no tapa nada). Texto de 12 px en
+ * --color-fg-muted: contraste ≥ 5,8:1 sobre los 8 cielos (AA pide 4,5:1). El
+ * link al GitHub está solo en el nombre y se subraya en hover y en foco.
  */
 export default function Firma() {
   return (
-    <footer className="flex justify-center px-xl pt-xl pb-xl lg:justify-end lg:px-gutter lg:pt-0 lg:pb-2xl">
-      <a
-        href={URL_GITHUB}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="vidrio-firma flex max-w-full items-center gap-md rounded-xl px-lg py-sm text-fg lg:rounded-pill lg:px-xl"
-      >
-        {/* Decorativo: el nombre de la marca ya está en el texto. */}
-        <Image src={ICONO} alt="" width={32} height={28} className="h-7 w-8 shrink-0" />
-        <span className="text-micro leading-snug font-medium lg:text-caption">
-          <span>Diseñado y desarrollado por Tatiana Delsoglio</span>
-          <span className="sr-only lg:not-sr-only"> · </span>
-          <span className="block lg:inline">TAMADE Software / Development</span>
+    <footer className="flex items-center gap-sm px-xl pt-xl pb-xl text-micro text-fg-muted lg:px-gutter lg:pb-2xl">
+      {/* Decorativo: la marca ya está en el texto. */}
+      <Image
+        src={ICONO}
+        alt=""
+        width={16}
+        height={14}
+        className="h-3.5 w-4 shrink-0 opacity-70"
+      />
+      <p>
+        © {ANIO} Atmósfera · Hecho por{" "}
+        <a
+          href={URL_GITHUB}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline-offset-2 hover:underline focus-visible:underline"
+        >
+          Tatiana Delsoglio
           <span className="sr-only"> (se abre en otra pestaña)</span>
-        </span>
-      </a>
+        </a>{" "}
+        · TAMADE
+      </p>
     </footer>
   );
 }
