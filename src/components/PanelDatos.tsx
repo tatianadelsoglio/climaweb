@@ -1,4 +1,5 @@
 import { Droplets, Sunrise, Sunset, Wind, type LucideIcon } from "lucide-react";
+import ArcoSolar from "@/components/ArcoSolar";
 import {
   formatearHoraLocal,
   formatearHumedad,
@@ -42,36 +43,6 @@ function HoraSolar({
   );
 }
 
-/**
- * Arco del recorrido solar del .pen (elipse con radio interior 0.98, mitad
- * superior). En la Fase 3a solo se dibuja el recorrido: el progreso y la
- * posición del sol llegan con el arco solar de la Fase 3b.
- */
-function ArcoSolar({ ancho, alto, className }: { ancho: number; alto: number; className: string }) {
-  const rx = ancho / 2;
-  const ry = alto - 6;
-  const rxInterior = rx * 0.98;
-  const ryInterior = ry * 0.98;
-  const d = [
-    `M0 ${alto}`,
-    `A${rx} ${ry} 0 0 1 ${ancho} ${alto}`,
-    `L${rx + rxInterior} ${alto}`,
-    `A${rxInterior} ${ryInterior} 0 0 0 ${rx - rxInterior} ${alto}`,
-    "Z",
-  ].join(" ");
-
-  return (
-    <svg
-      aria-hidden
-      viewBox={`0 0 ${ancho} ${alto}`}
-      preserveAspectRatio="none"
-      className={className}
-    >
-      <path d={d} className="fill-glass-line" />
-    </svg>
-  );
-}
-
 export default function PanelDatos({ clima }: PanelDatosProps) {
   const { zonaHoraria, amanecer, atardecer } = clima;
   const hayHorarioSolar = amanecer !== null && atardecer !== null;
@@ -89,8 +60,8 @@ export default function PanelDatos({ clima }: PanelDatosProps) {
 
       {hayHorarioSolar && (
         <div className="flex flex-col gap-sm shadow-[inset_0_1px_0_var(--color-glass-line)] px-xl pt-inset pb-lg lg:px-2xl lg:pt-lg lg:pb-xl">
-          <ArcoSolar ancho={308} alto={70} className="h-[70px] w-full lg:hidden" />
-          <ArcoSolar ancho={472} alto={96} className="hidden h-24 w-full lg:block" />
+          <ArcoSolar anchoDiseno={308} alto={70} className="h-[70px] w-full lg:hidden" />
+          <ArcoSolar anchoDiseno={472} alto={96} className="hidden h-24 w-full lg:block" />
           <div className="flex justify-between">
             <HoraSolar
               icono={Sunrise}
