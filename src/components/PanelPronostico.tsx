@@ -68,9 +68,15 @@ function HoyNoDisponible() {
   );
 }
 
+// Altura del esqueleto (7 filas de 56 px; en lg, una fila de 140 px): el error ocupa lo mismo
+// y la página no salta cuando falla el pedido.
+const ALTURA_PANEL = "min-h-[392px] lg:min-h-[140px]";
+
 function Mensaje({ children }: { children: string }) {
   return (
-    <p className="flex min-h-[144px] items-center justify-center px-xl text-center text-caption text-fg-muted lg:min-h-[93px]">
+    <p
+      className={`flex items-center justify-center px-xl text-center text-caption text-fg-muted ${ALTURA_PANEL}`}
+    >
       {children}
     </p>
   );
