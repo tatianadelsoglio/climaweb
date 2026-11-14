@@ -22,7 +22,10 @@ export function useFocoEnContenido(estado: string, estadoFinal: boolean) {
   useEffect(() => {
     if (!pendienteRef.current || !estadoFinal) return;
     pendienteRef.current = false;
-    contenedorRef.current?.querySelector<HTMLElement>("h1")?.focus();
+    const contenedor = contenedorRef.current;
+    // Si mientras cargaba la persona movió el foco (por ejemplo, al buscador), se respeta.
+    if (!contenedor || document.activeElement !== contenedor) return;
+    contenedor.querySelector<HTMLElement>("h1")?.focus();
   }, [estado, estadoFinal]);
 
   return { contenedorRef, llevarFocoAlContenido };
