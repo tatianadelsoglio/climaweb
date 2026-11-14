@@ -45,8 +45,9 @@ function sugerenciaDeOpenWeather(item: unknown): Sugerencia | null {
 
 /**
  * Respuesta de /geo/1.0/direct → sugerencias. Descarta los elementos inválidos
- * y los repetidos (mismo nombre, estado y país: la API a veces devuelve el
- * mismo lugar dos veces) y respeta el límite.
+ * y los repetidos (mismo nombre, estado y país, o mismas coordenadas: la API
+ * a veces devuelve el mismo lugar dos veces, también con otro nombre) y
+ * respeta el límite.
  */
 export function normalizarGeocoding(datos: unknown): Sugerencia[] {
   if (!Array.isArray(datos)) return [];
@@ -55,11 +56,12 @@ export function normalizarGeocoding(datos: unknown): Sugerencia[] {
   for (const item of datos as unknown[]) {
     const sugerencia = sugerenciaDeOpenWeather(item);
     if (!sugerencia) continue;
-    const clave = [sugerencia.nombre, sugerencia.estado ?? "", sugerencia.pais]
-      .join("|")
-      .toLocaleLowerCase("es");
-    if (vistas.has(clave)) continue;
-    vistas.add(clave);
+    const claves = [
+      [sugerencia.nombre, sugerencia.estado ?? "", sugerencia.pais].join("|").toLocaleLowerCase("es"),
+      `${sugerencia.lat},${sugerencia.lon}`,
+    ];
+    if (claves.some((clave) => vistas.has(clave))) continue;
+    claves.forEach((clave) => vistas.add(clave));
     sugerencias.push(sugerencia);
     if (sugerencias.length === LIMITE_SUGERENCIAS) break;
   }

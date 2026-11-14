@@ -11,7 +11,7 @@ export default function ChipCiudad({ nombre, onElegir, className = "" }: ChipCiu
     <button
       type="button"
       onClick={onElegir}
-      className={`glass flex h-11 items-center gap-xs rounded-pill px-lg text-body font-semibold lg:h-12 lg:gap-sm lg:px-xl ${className}`}
+      className={`glass flex min-h-11 items-center gap-xs rounded-pill px-lg py-2xs text-left text-body font-semibold lg:min-h-12 lg:gap-sm lg:px-xl ${className}`}
     >
       <MapPin aria-hidden className="size-3.5 text-accent lg:size-4" />
       {nombre}

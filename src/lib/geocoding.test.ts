@@ -72,13 +72,29 @@ describe("normalizarGeocoding", () => {
     const resultado = normalizarGeocoding([
       cordoba,
       { ...cordoba, lat: -31.5 },
-      { ...cordoba, state: "Andalucía", country: "ES" },
+      { ...cordoba, state: "Andalucía", country: "ES", lat: 37.9, lon: -4.8 },
     ]);
     assert.equal(resultado.length, 2);
   });
 
+  it("elimina el mismo lugar con otro nombre (mismas coordenadas)", () => {
+    const resultado = normalizarGeocoding([
+      { ...cordoba, name: "Buenos Aires", local_names: undefined },
+      { ...cordoba, name: "Ciudad Autónoma de Buenos Aires", local_names: undefined },
+    ]);
+    assert.deepEqual(
+      resultado.map((s) => s.nombre),
+      ["Buenos Aires"],
+    );
+  });
+
   it("limita a 5 resultados", () => {
-    const muchos = Array.from({ length: 8 }, (_, i) => ({ ...cordoba, state: `Estado ${i}` }));
+    const muchos = Array.from({ length: 8 }, (_, i) => ({
+      ...cordoba,
+      state: `Estado ${i}`,
+      lat: i,
+      lon: i,
+    }));
     assert.equal(normalizarGeocoding(muchos).length, LIMITE_SUGERENCIAS);
   });
 

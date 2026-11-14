@@ -86,7 +86,10 @@ async function pedirFranjas(url: URL): Promise<FranjaPronostico[] | null> {
   try {
     return extraerFranjas(await pedirJson(url));
   } catch (error) {
-    console.error("No se pudo obtener el pronóstico", error);
+    // Si la ciudad no existe, el clima actual falla igual y ya informa el error.
+    if (!(error instanceof OpenWeatherError && error.codigo === "CIUDAD_NO_ENCONTRADA")) {
+      console.error("No se pudo obtener el pronóstico", error);
+    }
     return null;
   }
 }

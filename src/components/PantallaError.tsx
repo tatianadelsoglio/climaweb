@@ -67,7 +67,7 @@ export default function PantallaError({
           {hayAlternativas && (
             <ul aria-label="¿Quisiste decir…?" className="flex flex-col items-start gap-sm lg:flex-row lg:flex-wrap">
               {alternativas.map((alternativa, i) => (
-                <li key={`${alternativa.lat},${alternativa.lon}`}>
+                <li key={`${alternativa.lat},${alternativa.lon},${i}`}>
                   <ChipCiudad nombre={etiquetas[i]} onElegir={() => onElegirAlternativa(alternativa)} />
                 </li>
               ))}

@@ -44,7 +44,7 @@ export default function ListaSugerencias({
           const { coincide, resto } = dividirCoincidencia(sugerencia.nombre, escrito);
           return (
             <li
-              key={`${sugerencia.lat},${sugerencia.lon}`}
+              key={`${sugerencia.lat},${sugerencia.lon},${indice}`}
               id={idOpcion(prefijoOpcion, indice)}
               role="option"
               aria-selected={activa}
