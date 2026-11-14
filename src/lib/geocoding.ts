@@ -1,5 +1,4 @@
-// Import relativo: este módulo también corre en el runner de tests de Node, sin alias.
-import type { Sugerencia } from "../types/geocoding.ts";
+import type { Sugerencia } from "../types/geocoding";
 
 /** Mínimo de caracteres de la ciudad para pedir sugerencias (cliente y servidor). */
 export const MINIMO_CARACTERES = 3;

@@ -1,6 +1,5 @@
-import assert from "node:assert/strict";
-import { describe, it } from "node:test";
-import { esDeDia, resolverCielo } from "./resolverCielo.ts";
+import { describe, expect, it } from "vitest";
+import { esDeDia, resolverCielo } from "./resolverCielo";
 
 // Córdoba, Argentina (UTC−3), 14/11/2026: amanecer 06:12 y atardecer 19:58 locales.
 const CORDOBA = {
@@ -22,19 +21,19 @@ function datos(codigo: number, momento: number, extra: Partial<typeof CORDOBA> =
 
 describe("resolverCielo", () => {
   it("800 → clear de día y de noche", () => {
-    assert.equal(resolverCielo(datos(800, MEDIODIA_CORDOBA)), "clear-day");
-    assert.equal(resolverCielo(datos(800, NOCHE_CORDOBA)), "clear-night");
+    expect(resolverCielo(datos(800, MEDIODIA_CORDOBA))).toBe("clear-day");
+    expect(resolverCielo(datos(800, NOCHE_CORDOBA))).toBe("clear-night");
   });
 
   it("801 (pocas nubes) → clear de día y de noche", () => {
-    assert.equal(resolverCielo(datos(801, MEDIODIA_CORDOBA)), "clear-day");
-    assert.equal(resolverCielo(datos(801, NOCHE_CORDOBA)), "clear-night");
+    expect(resolverCielo(datos(801, MEDIODIA_CORDOBA))).toBe("clear-day");
+    expect(resolverCielo(datos(801, NOCHE_CORDOBA))).toBe("clear-night");
   });
 
   it("802 a 804 → clouds de día y de noche", () => {
     for (const codigo of [802, 803, 804]) {
-      assert.equal(resolverCielo(datos(codigo, MEDIODIA_CORDOBA)), "clouds-day");
-      assert.equal(resolverCielo(datos(codigo, NOCHE_CORDOBA)), "clouds-night");
+      expect(resolverCielo(datos(codigo, MEDIODIA_CORDOBA))).toBe("clouds-day");
+      expect(resolverCielo(datos(codigo, NOCHE_CORDOBA))).toBe("clouds-night");
     }
   });
 
@@ -52,13 +51,13 @@ describe("resolverCielo", () => {
       [781, "mist"],
     ] as const;
     for (const [codigo, cielo] of casos) {
-      assert.equal(resolverCielo(datos(codigo, MEDIODIA_CORDOBA)), cielo);
-      assert.equal(resolverCielo(datos(codigo, NOCHE_CORDOBA)), cielo);
+      expect(resolverCielo(datos(codigo, MEDIODIA_CORDOBA))).toBe(cielo);
+      expect(resolverCielo(datos(codigo, NOCHE_CORDOBA))).toBe(cielo);
     }
   });
 
   it("un código desconocido cae en clear", () => {
-    assert.equal(resolverCielo(datos(999, MEDIODIA_CORDOBA)), "clear-day");
+    expect(resolverCielo(datos(999, MEDIODIA_CORDOBA))).toBe("clear-day");
   });
 });
 
@@ -90,8 +89,8 @@ describe("mapeo de todos los códigos de OpenWeather a cielos", () => {
     const [dia, noche] = esperado[grupo as keyof typeof CODIGOS_OPENWEATHER];
     it(`${grupo} (${codigos[0]}–${codigos.at(-1)}) → ${dia} / ${noche}`, () => {
       for (const codigo of codigos) {
-        assert.equal(resolverCielo(datos(codigo, MEDIODIA_CORDOBA)), dia, `${codigo} de día`);
-        assert.equal(resolverCielo(datos(codigo, NOCHE_CORDOBA)), noche, `${codigo} de noche`);
+        expect(resolverCielo(datos(codigo, MEDIODIA_CORDOBA)), `${codigo} de día`).toBe(dia);
+        expect(resolverCielo(datos(codigo, NOCHE_CORDOBA)), `${codigo} de noche`).toBe(noche);
       }
     });
   }
@@ -99,10 +98,10 @@ describe("mapeo de todos los códigos de OpenWeather a cielos", () => {
 
 describe("esDeDia", () => {
   it("usa los límites exactos: amanecer incluido, atardecer excluido", () => {
-    assert.equal(esDeDia(datos(800, CORDOBA.amanecer - 1)), false);
-    assert.equal(esDeDia(datos(800, CORDOBA.amanecer)), true);
-    assert.equal(esDeDia(datos(800, CORDOBA.atardecer - 1)), true);
-    assert.equal(esDeDia(datos(800, CORDOBA.atardecer)), false);
+    expect(esDeDia(datos(800, CORDOBA.amanecer - 1))).toBe(false);
+    expect(esDeDia(datos(800, CORDOBA.amanecer))).toBe(true);
+    expect(esDeDia(datos(800, CORDOBA.atardecer - 1))).toBe(true);
+    expect(esDeDia(datos(800, CORDOBA.atardecer))).toBe(false);
   });
 
   it("usa el huso de la ciudad, no el del usuario", () => {
@@ -113,24 +112,21 @@ describe("esDeDia", () => {
       atardecer: Date.UTC(2026, 10, 14, 7, 35) / 1000, // 16:35 local
     };
     const mediodiaTokio = Date.UTC(2026, 10, 14, 3, 0) / 1000;
-    assert.equal(esDeDia({ ...tokio, momento: mediodiaTokio }), true);
+    expect(esDeDia({ ...tokio, momento: mediodiaTokio })).toBe(true);
     // Ese mismo instante es de noche en Córdoba (00:00 local).
-    assert.equal(esDeDia(datos(800, mediodiaTokio)), false);
+    expect(esDeDia(datos(800, mediodiaTokio))).toBe(false);
   });
 
   it("compara horas locales aunque el amanecer informado sea de otra fecha", () => {
     // Amanecer del día siguiente: sigue siendo de día a las 12:42.
     const amanecerManiana = CORDOBA.amanecer + 86_400;
-    assert.equal(
-      esDeDia(datos(800, MEDIODIA_CORDOBA, { amanecer: amanecerManiana })),
-      true,
-    );
+    expect(esDeDia(datos(800, MEDIODIA_CORDOBA, { amanecer: amanecerManiana }))).toBe(true);
   });
 
   it("sin amanecer ni atardecer (polar) usa la hora local de la ciudad", () => {
     const polar = { amanecer: null, atardecer: null, zonaHoraria: 0 };
-    assert.equal(esDeDia({ ...polar, momento: Date.UTC(2026, 5, 21, 12) / 1000 }), true);
-    assert.equal(esDeDia({ ...polar, momento: Date.UTC(2026, 5, 21, 23) / 1000 }), false);
+    expect(esDeDia({ ...polar, momento: Date.UTC(2026, 5, 21, 12) / 1000 })).toBe(true);
+    expect(esDeDia({ ...polar, momento: Date.UTC(2026, 5, 21, 23) / 1000 })).toBe(false);
   });
 
   it("husos con media hora y desplazamientos que cruzan la medianoche", () => {
@@ -140,7 +136,7 @@ describe("esDeDia", () => {
       amanecer: Date.UTC(2026, 10, 14, 0, 50) / 1000, // 06:20 local
       atardecer: Date.UTC(2026, 10, 14, 12, 10) / 1000, // 17:40 local
     };
-    assert.equal(esDeDia({ ...india, momento: Date.UTC(2026, 10, 13, 18, 30) / 1000 }), false);
-    assert.equal(esDeDia({ ...india, momento: Date.UTC(2026, 10, 14, 6, 0) / 1000 }), true);
+    expect(esDeDia({ ...india, momento: Date.UTC(2026, 10, 13, 18, 30) / 1000 })).toBe(false);
+    expect(esDeDia({ ...india, momento: Date.UTC(2026, 10, 14, 6, 0) / 1000 })).toBe(true);
   });
 });

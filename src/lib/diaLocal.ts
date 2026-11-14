@@ -1,5 +1,4 @@
-// Import relativo: este módulo también corre en el runner de tests de Node, sin alias.
-import type { DiaPronostico } from "../types/clima.ts";
+import type { DiaPronostico } from "../types/clima";
 
 /** Día calendario en el huso de la ciudad, como «2026-11-14». */
 export function claveDiaLocal(instante: number, zonaHoraria: number): string {

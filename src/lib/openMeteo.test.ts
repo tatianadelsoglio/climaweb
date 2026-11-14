@@ -1,6 +1,5 @@
-import assert from "node:assert/strict";
-import { describe, it } from "node:test";
-import { esRespuestaPronostico, normalizarPronostico } from "./openMeteo.ts";
+import { describe, expect, it } from "vitest";
+import { esRespuestaPronostico, normalizarPronostico } from "./openMeteo";
 
 // Forma real de la respuesta de /v1/forecast?daily=...&timezone=auto&forecast_days=7.
 const RESPUESTA = {
@@ -18,45 +17,42 @@ const RESPUESTA = {
 describe("normalizarPronostico", () => {
   it("devuelve 7 días, con hoy primero", () => {
     const dias = normalizarPronostico(RESPUESTA);
-    assert.equal(dias.length, 7);
-    assert.equal(dias[0].fecha, "2026-11-14");
-    assert.equal(dias[6].fecha, "2026-11-20");
+    expect(dias.length).toBe(7);
+    expect(dias[0].fecha).toBe("2026-11-14");
+    expect(dias[6].fecha).toBe("2026-11-20");
   });
 
   it("toma la mínima y la máxima del día completo", () => {
     const [hoy] = normalizarPronostico(RESPUESTA);
-    assert.equal(hoy.minima, 19.0);
-    assert.equal(hoy.maxima, 26.7);
+    expect(hoy.minima).toBe(19.0);
+    expect(hoy.maxima).toBe(26.7);
   });
 
   it("traduce el weather_code a condición de OpenWeather", () => {
     const dias = normalizarPronostico(RESPUESTA);
-    assert.equal(dias[0].codigo, 212); // WMO 96: tormenta con granizo
-    assert.equal(dias[1].codigo, 804); // WMO 3: cubierto
-    assert.equal(dias[3].codigo, 301); // WMO 53: llovizna
+    expect(dias[0].codigo).toBe(212); // WMO 96: tormenta con granizo
+    expect(dias[1].codigo).toBe(804); // WMO 3: cubierto
+    expect(dias[3].codigo).toBe(301); // WMO 53: llovizna
   });
 
   it("la probabilidad de lluvia sale de precipitation_probability_max", () => {
     const dias = normalizarPronostico(RESPUESTA);
-    assert.deepEqual(
-      dias.map((d) => d.probabilidadLluvia),
-      [57, 3, 85, 82, 69, 81, 69],
-    );
+    expect(dias.map((d) => d.probabilidadLluvia)).toStrictEqual([57, 3, 85, 82, 69, 81, 69]);
   });
 
   it("sin probabilidad (columna ausente o null) queda en null, sin descartar el día", () => {
     const sinColumna = {
       daily: { ...RESPUESTA.daily, precipitation_probability_max: undefined },
     };
-    assert.ok(normalizarPronostico(sinColumna).every((d) => d.probabilidadLluvia === null));
+    expect(normalizarPronostico(sinColumna).every((d) => d.probabilidadLluvia === null)).toBeTruthy();
 
     const conNull = {
       daily: { ...RESPUESTA.daily, precipitation_probability_max: [null, 10, 20, 30, 40, 50, 60] },
     };
     const dias = normalizarPronostico(conNull);
-    assert.equal(dias.length, 7);
-    assert.equal(dias[0].probabilidadLluvia, null);
-    assert.equal(dias[1].probabilidadLluvia, 10);
+    expect(dias.length).toBe(7);
+    expect(dias[0].probabilidadLluvia).toBe(null);
+    expect(dias[1].probabilidadLluvia).toBe(10);
   });
 
   it("descarta los días con temperatura, fecha o código inválidos", () => {
@@ -69,10 +65,7 @@ describe("normalizarPronostico", () => {
         weather_code: [0, 0, 0, 999, 61],
       },
     });
-    assert.deepEqual(
-      dias.map((d) => d.fecha),
-      ["2026-11-14", "2026-11-18"],
-    );
+    expect(dias.map((d) => d.fecha)).toStrictEqual(["2026-11-14", "2026-11-18"]);
   });
 
   it("no pasa de 7 días", () => {
@@ -86,24 +79,21 @@ describe("normalizarPronostico", () => {
         weather_code: diez.map(() => 0),
       },
     });
-    assert.equal(dias.length, 7);
+    expect(dias.length).toBe(7);
   });
 
   it("acota la probabilidad al rango 0 a 100", () => {
     const dias = normalizarPronostico({
       daily: { ...RESPUESTA.daily, precipitation_probability_max: [150, -5, 0.4, 10, 10, 10, 10] },
     });
-    assert.deepEqual(
-      dias.slice(0, 3).map((d) => d.probabilidadLluvia),
-      [100, 0, 0],
-    );
+    expect(dias.slice(0, 3).map((d) => d.probabilidadLluvia)).toStrictEqual([100, 0, 0]);
   });
 
   it("una respuesta sin daily o con columnas faltantes da un arreglo vacío", () => {
-    assert.deepEqual(normalizarPronostico(null), []);
-    assert.deepEqual(normalizarPronostico({}), []);
-    assert.deepEqual(normalizarPronostico({ daily: { time: ["2026-11-14"] } }), []);
-    assert.deepEqual(normalizarPronostico({ error: true, reason: "x" }), []);
+    expect(normalizarPronostico(null)).toStrictEqual([]);
+    expect(normalizarPronostico({})).toStrictEqual([]);
+    expect(normalizarPronostico({ daily: { time: ["2026-11-14"] } })).toStrictEqual([]);
+    expect(normalizarPronostico({ error: true, reason: "x" })).toStrictEqual([]);
   });
 });
 
@@ -111,15 +101,15 @@ describe("esRespuestaPronostico", () => {
   const dia = { fecha: "2026-11-14", minima: 10, maxima: 20, codigo: 800, probabilidadLluvia: 10 };
 
   it("acepta lo que genera normalizarPronostico", () => {
-    assert.equal(esRespuestaPronostico({ dias: normalizarPronostico(RESPUESTA) }), true);
-    assert.equal(esRespuestaPronostico({ dias: [{ ...dia, probabilidadLluvia: null }] }), true);
+    expect(esRespuestaPronostico({ dias: normalizarPronostico(RESPUESTA) })).toBe(true);
+    expect(esRespuestaPronostico({ dias: [{ ...dia, probabilidadLluvia: null }] })).toBe(true);
   });
 
   it("rechaza formas inválidas", () => {
-    assert.equal(esRespuestaPronostico(null), false);
-    assert.equal(esRespuestaPronostico({ dias: [] }), false);
-    assert.equal(esRespuestaPronostico({ dias: [{ ...dia, fecha: "hoy" }] }), false);
-    assert.equal(esRespuestaPronostico({ dias: [{ ...dia, maxima: "20" }] }), false);
-    assert.equal(esRespuestaPronostico({ dias: [{ ...dia, probabilidadLluvia: undefined }] }), false);
+    expect(esRespuestaPronostico(null)).toBe(false);
+    expect(esRespuestaPronostico({ dias: [] })).toBe(false);
+    expect(esRespuestaPronostico({ dias: [{ ...dia, fecha: "hoy" }] })).toBe(false);
+    expect(esRespuestaPronostico({ dias: [{ ...dia, maxima: "20" }] })).toBe(false);
+    expect(esRespuestaPronostico({ dias: [{ ...dia, probabilidadLluvia: undefined }] })).toBe(false);
   });
 });

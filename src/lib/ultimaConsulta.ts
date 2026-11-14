@@ -1,7 +1,6 @@
-// Imports relativos: este módulo también corre en el runner de tests de Node, sin alias.
-import { nombrePais } from "./formatoClima.ts";
-import { validarBusqueda } from "./validarBusqueda.ts";
-import type { ConsultaClima } from "../types/clima.ts";
+import { nombrePais } from "./formatoClima";
+import { validarBusqueda } from "./validarBusqueda";
+import type { ConsultaClima } from "../types/clima";
 
 export const CLAVE_ULTIMA_CONSULTA = "atmosfera:ultima-consulta";
 const NOMBRE_MAX = 100;

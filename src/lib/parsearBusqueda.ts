@@ -1,5 +1,4 @@
-// Import relativo: este módulo también corre en el runner de tests de Node, sin alias.
-import { validarBusqueda, type BusquedaValida } from "./validarBusqueda.ts";
+import { validarBusqueda, type BusquedaValida } from "./validarBusqueda";
 
 export interface BusquedaTexto {
   ciudad: string;

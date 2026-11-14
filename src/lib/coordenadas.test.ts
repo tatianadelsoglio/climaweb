@@ -1,26 +1,25 @@
-import assert from "node:assert/strict";
-import { describe, it } from "node:test";
-import { formatearCoordenada } from "./coordenadas.ts";
+import { describe, expect, it } from "vitest";
+import { formatearCoordenada } from "./coordenadas";
 
 describe("formatearCoordenada", () => {
   it("usa 4 decimales", () => {
-    assert.equal(formatearCoordenada(-31.4173391), "-31.4173");
-    assert.equal(formatearCoordenada(40.7), "40.7000");
+    expect(formatearCoordenada(-31.4173391)).toBe("-31.4173");
+    expect(formatearCoordenada(40.7)).toBe("40.7000");
   });
 
   it("nunca usa notación científica", () => {
-    assert.equal(formatearCoordenada(0.00000001), "0.0000");
-    assert.equal(formatearCoordenada(1e-8), "0.0000");
-    assert.ok(!/e/i.test(formatearCoordenada(123456789e-12)));
+    expect(formatearCoordenada(0.00000001)).toBe("0.0000");
+    expect(formatearCoordenada(1e-8)).toBe("0.0000");
+    expect(!/e/i.test(formatearCoordenada(123456789e-12))).toBeTruthy();
   });
 
   it("no devuelve «-0.0000»", () => {
-    assert.equal(formatearCoordenada(-0.00001), "0.0000");
-    assert.equal(formatearCoordenada(-0), "0.0000");
+    expect(formatearCoordenada(-0.00001)).toBe("0.0000");
+    expect(formatearCoordenada(-0)).toBe("0.0000");
   });
 
   it("conserva los límites", () => {
-    assert.equal(formatearCoordenada(90), "90.0000");
-    assert.equal(formatearCoordenada(-180), "-180.0000");
+    expect(formatearCoordenada(90)).toBe("90.0000");
+    expect(formatearCoordenada(-180)).toBe("-180.0000");
   });
 });

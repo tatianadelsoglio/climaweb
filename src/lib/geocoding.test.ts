@@ -1,10 +1,9 @@
-import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { describe, expect, it } from "vitest";
 import {
   LIMITE_SUGERENCIAS,
   normalizarGeocoding,
   sugerenciasVigentes,
-} from "./geocoding.ts";
+} from "./geocoding";
 
 // Forma real de un resultado de /v1/search?language=es.
 const cordoba = {
@@ -24,7 +23,7 @@ function respuesta(...results: unknown[]) {
 
 describe("normalizarGeocoding", () => {
   it("normaliza nombre, estado, país y coordenadas", () => {
-    assert.deepEqual(normalizarGeocoding(respuesta(cordoba)), [
+    expect(normalizarGeocoding(respuesta(cordoba))).toStrictEqual([
       {
         nombre: "Córdoba",
         estado: "Provincia de Córdoba",
@@ -37,8 +36,8 @@ describe("normalizarGeocoding", () => {
 
   it("el estado es opcional", () => {
     const sinEstado = { ...cordoba, admin1: undefined };
-    assert.equal(normalizarGeocoding(respuesta(sinEstado))[0].estado, null);
-    assert.equal(normalizarGeocoding(respuesta({ ...cordoba, admin1: "  " }))[0].estado, null);
+    expect(normalizarGeocoding(respuesta(sinEstado))[0].estado).toBe(null);
+    expect(normalizarGeocoding(respuesta({ ...cordoba, admin1: "  " }))[0].estado).toBe(null);
   });
 
   it("resuelve «Nueva York»: nombre en español y estado", () => {
@@ -51,13 +50,13 @@ describe("normalizarGeocoding", () => {
         admin1: "Nueva York",
       }),
     );
-    assert.equal(s.nombre, "Nueva York");
-    assert.equal(s.estado, "Nueva York");
-    assert.equal(s.pais, "US");
+    expect(s.nombre).toBe("Nueva York");
+    expect(s.estado).toBe("Nueva York");
+    expect(s.pais).toBe("US");
   });
 
   it("pasa el país a mayúsculas", () => {
-    assert.equal(normalizarGeocoding(respuesta({ ...cordoba, country_code: "ar" }))[0].pais, "AR");
+    expect(normalizarGeocoding(respuesta({ ...cordoba, country_code: "ar" }))[0].pais).toBe("AR");
   });
 
   it("descarta los elementos inválidos", () => {
@@ -73,7 +72,7 @@ describe("normalizarGeocoding", () => {
         cordoba,
       ),
     );
-    assert.equal(resultado.length, 1);
+    expect(resultado.length).toBe(1);
   });
 
   it("elimina los repetidos", () => {
@@ -84,7 +83,7 @@ describe("normalizarGeocoding", () => {
         { ...cordoba, admin1: "Andalucía", country_code: "ES", latitude: 37.9, longitude: -4.8 },
       ),
     );
-    assert.equal(resultado.length, 2);
+    expect(resultado.length).toBe(2);
   });
 
   it("elimina el mismo lugar con otro nombre (mismas coordenadas)", () => {
@@ -94,10 +93,7 @@ describe("normalizarGeocoding", () => {
         { ...cordoba, name: "Ciudad Autónoma de Buenos Aires" },
       ),
     );
-    assert.deepEqual(
-      resultado.map((s) => s.nombre),
-      ["Buenos Aires"],
-    );
+    expect(resultado.map((s) => s.nombre)).toStrictEqual(["Buenos Aires"]);
   });
 
   it("limita a 5 resultados", () => {
@@ -107,14 +103,14 @@ describe("normalizarGeocoding", () => {
       latitude: i,
       longitude: i,
     }));
-    assert.equal(normalizarGeocoding(respuesta(...muchos)).length, LIMITE_SUGERENCIAS);
+    expect(normalizarGeocoding(respuesta(...muchos)).length).toBe(LIMITE_SUGERENCIAS);
   });
 
   it("sin resultados (Open-Meteo omite `results`) o con otra forma, lista vacía", () => {
-    assert.deepEqual(normalizarGeocoding({ generationtime_ms: 0.2 }), []);
-    assert.deepEqual(normalizarGeocoding(null), []);
-    assert.deepEqual(normalizarGeocoding({ results: "x" }), []);
-    assert.deepEqual(normalizarGeocoding([cordoba]), []);
+    expect(normalizarGeocoding({ generationtime_ms: 0.2 })).toStrictEqual([]);
+    expect(normalizarGeocoding(null)).toStrictEqual([]);
+    expect(normalizarGeocoding({ results: "x" })).toStrictEqual([]);
+    expect(normalizarGeocoding([cordoba])).toStrictEqual([]);
   });
 });
 
@@ -123,15 +119,15 @@ describe("sugerenciasVigentes", () => {
   const vigente = { clave: "Sant|", sugerencias: [santiago] };
 
   it("devuelve las sugerencias de la búsqueda actual", () => {
-    assert.deepEqual(sugerenciasVigentes(vigente, "Sant|"), [santiago]);
+    expect(sugerenciasVigentes(vigente, "Sant|")).toStrictEqual([santiago]);
   });
 
   it("al escribir más, las de la clave anterior ya no valen (Enter no las elige)", () => {
-    assert.deepEqual(sugerenciasVigentes(vigente, "Santa Fe|"), []);
+    expect(sugerenciasVigentes(vigente, "Santa Fe|")).toStrictEqual([]);
   });
 
   it("sin clave (texto corto) o sin respuesta no hay sugerencias", () => {
-    assert.deepEqual(sugerenciasVigentes(vigente, null), []);
-    assert.deepEqual(sugerenciasVigentes(null, "Sant|"), []);
+    expect(sugerenciasVigentes(vigente, null)).toStrictEqual([]);
+    expect(sugerenciasVigentes(null, "Sant|")).toStrictEqual([]);
   });
 });

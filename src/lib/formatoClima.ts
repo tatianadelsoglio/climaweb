@@ -1,4 +1,4 @@
-import { convertirTemperatura, type Unidad } from "./unidades.ts";
+import { convertirTemperatura, type Unidad } from "./unidades";
 
 const PUNTOS_CARDINALES = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"] as const;
 const NOMBRES_CARDINALES = [

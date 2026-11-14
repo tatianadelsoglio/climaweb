@@ -1,45 +1,44 @@
-import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { describe, expect, it } from "vitest";
 import {
   interpretarBusqueda,
   MENSAJE_BUSQUEDA_INVALIDA,
   MENSAJE_BUSQUEDA_VACIA,
   parsearBusqueda,
-} from "./parsearBusqueda.ts";
+} from "./parsearBusqueda";
 
 describe("parsearBusqueda", () => {
   it("toma el texto sin coma como ciudad", () => {
-    assert.deepEqual(parsearBusqueda("  Córdoba "), { ciudad: "Córdoba" });
+    expect(parsearBusqueda("  Córdoba ")).toStrictEqual({ ciudad: "Córdoba" });
   });
 
   it("reconoce el código de país", () => {
-    assert.deepEqual(parsearBusqueda("Córdoba, ar"), { ciudad: "Córdoba", pais: "AR" });
+    expect(parsearBusqueda("Córdoba, ar")).toStrictEqual({ ciudad: "Córdoba", pais: "AR" });
   });
 
   it("reconoce el nombre del país en español, con o sin tildes", () => {
-    assert.deepEqual(parsearBusqueda("Córdoba, Argentina"), { ciudad: "Córdoba", pais: "AR" });
-    assert.deepEqual(parsearBusqueda("Córdoba, Espana"), { ciudad: "Córdoba", pais: "ES" });
-    assert.deepEqual(parsearBusqueda("Puebla, México"), { ciudad: "Puebla", pais: "MX" });
+    expect(parsearBusqueda("Córdoba, Argentina")).toStrictEqual({ ciudad: "Córdoba", pais: "AR" });
+    expect(parsearBusqueda("Córdoba, Espana")).toStrictEqual({ ciudad: "Córdoba", pais: "ES" });
+    expect(parsearBusqueda("Puebla, México")).toStrictEqual({ ciudad: "Puebla", pais: "MX" });
   });
 
   it("deja el texto entero si el último tramo no es un país", () => {
-    assert.deepEqual(parsearBusqueda("Córdoba, Córdoba"), { ciudad: "Córdoba, Córdoba" });
-    assert.deepEqual(parsearBusqueda(", AR"), { ciudad: ", AR" });
+    expect(parsearBusqueda("Córdoba, Córdoba")).toStrictEqual({ ciudad: "Córdoba, Córdoba" });
+    expect(parsearBusqueda(", AR")).toStrictEqual({ ciudad: ", AR" });
   });
 });
 
 describe("interpretarBusqueda", () => {
   it("devuelve la búsqueda normalizada", () => {
-    assert.deepEqual(interpretarBusqueda("Córdoba, Argentina"), {
+    expect(interpretarBusqueda("Córdoba, Argentina")).toStrictEqual({
       valida: true,
       datos: { ciudad: "Córdoba", pais: "AR" },
     });
   });
 
   it("rechaza el texto vacío o inválido con un mensaje para el usuario", () => {
-    assert.deepEqual(interpretarBusqueda("   "), { valida: false, mensaje: MENSAJE_BUSQUEDA_VACIA });
-    assert.deepEqual(interpretarBusqueda("123"), { valida: false, mensaje: MENSAJE_BUSQUEDA_INVALIDA });
-    assert.deepEqual(interpretarBusqueda("Córdoba, Córdoba"), {
+    expect(interpretarBusqueda("   ")).toStrictEqual({ valida: false, mensaje: MENSAJE_BUSQUEDA_VACIA });
+    expect(interpretarBusqueda("123")).toStrictEqual({ valida: false, mensaje: MENSAJE_BUSQUEDA_INVALIDA });
+    expect(interpretarBusqueda("Córdoba, Córdoba")).toStrictEqual({
       valida: false,
       mensaje: MENSAJE_BUSQUEDA_INVALIDA,
     });

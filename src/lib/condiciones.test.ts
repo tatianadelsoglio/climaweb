@@ -1,42 +1,41 @@
-import assert from "node:assert/strict";
-import { describe, it } from "node:test";
-import { descripcionCondicion } from "./condiciones.ts";
+import { describe, expect, it } from "vitest";
+import { descripcionCondicion } from "./condiciones";
 
 describe("descripcionCondicion", () => {
   it("grupo 80x: despejado y nubosidad", () => {
-    assert.equal(descripcionCondicion(800), "Despejado");
-    assert.equal(descripcionCondicion(801), "Pocas nubes");
-    assert.equal(descripcionCondicion(802), "Parcialmente nublado");
-    assert.equal(descripcionCondicion(803), "Mayormente nublado");
-    assert.equal(descripcionCondicion(804), "Nublado");
+    expect(descripcionCondicion(800)).toBe("Despejado");
+    expect(descripcionCondicion(801)).toBe("Pocas nubes");
+    expect(descripcionCondicion(802)).toBe("Parcialmente nublado");
+    expect(descripcionCondicion(803)).toBe("Mayormente nublado");
+    expect(descripcionCondicion(804)).toBe("Nublado");
   });
 
   it("cubre un código de cada grupo", () => {
-    assert.equal(descripcionCondicion(211), "Tormenta");
-    assert.equal(descripcionCondicion(301), "Llovizna");
-    assert.equal(descripcionCondicion(501), "Lluvia moderada");
-    assert.equal(descripcionCondicion(601), "Nevada");
-    assert.equal(descripcionCondicion(741), "Niebla");
+    expect(descripcionCondicion(211)).toBe("Tormenta");
+    expect(descripcionCondicion(301)).toBe("Llovizna");
+    expect(descripcionCondicion(501)).toBe("Lluvia moderada");
+    expect(descripcionCondicion(601)).toBe("Nevada");
+    expect(descripcionCondicion(741)).toBe("Niebla");
   });
 
   it("un código desconocido usa la descripción de su grupo", () => {
-    assert.equal(descripcionCondicion(299), "Tormenta");
-    assert.equal(descripcionCondicion(399), "Llovizna");
-    assert.equal(descripcionCondicion(599), "Lluvia");
-    assert.equal(descripcionCondicion(699), "Nieve");
-    assert.equal(descripcionCondicion(799), "Visibilidad reducida");
-    assert.equal(descripcionCondicion(899), "Cielo variable");
+    expect(descripcionCondicion(299)).toBe("Tormenta");
+    expect(descripcionCondicion(399)).toBe("Llovizna");
+    expect(descripcionCondicion(599)).toBe("Lluvia");
+    expect(descripcionCondicion(699)).toBe("Nieve");
+    expect(descripcionCondicion(799)).toBe("Visibilidad reducida");
+    expect(descripcionCondicion(899)).toBe("Cielo variable");
   });
 
   it("un código fuera de todos los grupos tiene respaldo", () => {
-    assert.equal(descripcionCondicion(0), "Condición no disponible");
-    assert.equal(descripcionCondicion(1234), "Condición no disponible");
+    expect(descripcionCondicion(0)).toBe("Condición no disponible");
+    expect(descripcionCondicion(1234)).toBe("Condición no disponible");
   });
 
   it("ninguna descripción conocida está vacía ni en minúscula inicial", () => {
     for (let codigo = 200; codigo <= 804; codigo++) {
       const texto = descripcionCondicion(codigo);
-      assert.match(texto, /^\p{Lu}/u, `${codigo}: ${texto}`);
+      expect(texto, `${codigo}: ${texto}`).toMatch(/^\p{Lu}/u);
     }
   });
 });

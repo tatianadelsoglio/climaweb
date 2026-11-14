@@ -1,6 +1,5 @@
-// Imports relativos: este módulo también corre en el runner de tests de Node, sin alias.
-import { condicionDeWmo } from "./codigoWmo.ts";
-import type { DiaPronostico } from "../types/clima.ts";
+import { condicionDeWmo } from "./codigoWmo";
+import type { DiaPronostico } from "../types/clima";
 
 export const DIAS_PRONOSTICO = 7;
 

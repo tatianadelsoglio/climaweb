@@ -1,10 +1,9 @@
-import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { describe, expect, it } from "vitest";
 import {
   consultaParaGuardar,
   leerConsultaGuardada,
   textoDeConsulta,
-} from "./ultimaConsulta.ts";
+} from "./ultimaConsulta";
 
 const NUEVA_YORK = {
   lat: 40.7127,
@@ -16,14 +15,14 @@ const NUEVA_YORK = {
 
 describe("consultaParaGuardar", () => {
   it("guarda tal cual una búsqueda por ciudad", () => {
-    assert.deepEqual(consultaParaGuardar({ ciudad: "Madrid", pais: "ES" }, { ciudad: "Madrid", pais: "ES" }), {
+    expect(consultaParaGuardar({ ciudad: "Madrid", pais: "ES" }, { ciudad: "Madrid", pais: "ES" })).toStrictEqual({
       ciudad: "Madrid",
       pais: "ES",
     });
   });
 
   it("guarda tal cual una sugerencia elegida (con su nombre)", () => {
-    assert.deepEqual(consultaParaGuardar(NUEVA_YORK, { ciudad: "New York", pais: "US" }), NUEVA_YORK);
+    expect(consultaParaGuardar(NUEVA_YORK, { ciudad: "New York", pais: "US" })).toStrictEqual(NUEVA_YORK);
   });
 
   it("de la ubicación del dispositivo guarda la ciudad, no las coordenadas", () => {
@@ -31,63 +30,57 @@ describe("consultaParaGuardar", () => {
       { lat: -31.4173, lon: -64.1833, etiqueta: "tu ubicación" },
       { ciudad: "Córdoba", pais: "AR" },
     );
-    assert.deepEqual(guardada, { ciudad: "Córdoba", pais: "AR" });
+    expect(guardada).toStrictEqual({ ciudad: "Córdoba", pais: "AR" });
   });
 
   it("de la ubicación del dispositivo sin ciudad válida no guarda nada", () => {
-    assert.equal(
-      consultaParaGuardar({ lat: 0, lon: 0, etiqueta: "tu ubicación" }, { ciudad: "", pais: "" }),
-      null,
-    );
+    expect(consultaParaGuardar({ lat: 0, lon: 0, etiqueta: "tu ubicación" }, { ciudad: "", pais: "" })).toBe(null);
   });
 });
 
 describe("leerConsultaGuardada", () => {
   it("restaura una búsqueda por ciudad", () => {
-    assert.deepEqual(leerConsultaGuardada(JSON.stringify({ ciudad: "Madrid", pais: "ES" })), {
+    expect(leerConsultaGuardada(JSON.stringify({ ciudad: "Madrid", pais: "ES" }))).toStrictEqual({
       ciudad: "Madrid",
       pais: "ES",
     });
-    assert.deepEqual(leerConsultaGuardada(JSON.stringify({ ciudad: "Madrid" })), { ciudad: "Madrid" });
+    expect(leerConsultaGuardada(JSON.stringify({ ciudad: "Madrid" }))).toStrictEqual({ ciudad: "Madrid" });
   });
 
   it("restaura el nombre con que se mostró una búsqueda por ciudad", () => {
     const guardada = { ciudad: "Tokio", pais: "JP", nombre: "Tokio" };
-    assert.deepEqual(leerConsultaGuardada(JSON.stringify(guardada)), guardada);
-    assert.deepEqual(leerConsultaGuardada(JSON.stringify({ ciudad: "Tokio", nombre: 5 })), {
+    expect(leerConsultaGuardada(JSON.stringify(guardada))).toStrictEqual(guardada);
+    expect(leerConsultaGuardada(JSON.stringify({ ciudad: "Tokio", nombre: 5 }))).toStrictEqual({
       ciudad: "Tokio",
     });
   });
 
   it("restaura una consulta por coordenadas", () => {
-    assert.deepEqual(leerConsultaGuardada(JSON.stringify(NUEVA_YORK)), NUEVA_YORK);
+    expect(leerConsultaGuardada(JSON.stringify(NUEVA_YORK))).toStrictEqual(NUEVA_YORK);
   });
 
   it("sin nada guardado o con basura devuelve null", () => {
-    assert.equal(leerConsultaGuardada(null), null);
-    assert.equal(leerConsultaGuardada("no es json"), null);
-    assert.equal(leerConsultaGuardada("42"), null);
-    assert.equal(leerConsultaGuardada("null"), null);
-    assert.equal(leerConsultaGuardada("{}"), null);
+    expect(leerConsultaGuardada(null)).toBe(null);
+    expect(leerConsultaGuardada("no es json")).toBe(null);
+    expect(leerConsultaGuardada("42")).toBe(null);
+    expect(leerConsultaGuardada("null")).toBe(null);
+    expect(leerConsultaGuardada("{}")).toBe(null);
   });
 
   it("descarta valores manipulados", () => {
-    assert.equal(leerConsultaGuardada(JSON.stringify({ ciudad: "<script>" })), null);
-    assert.equal(leerConsultaGuardada(JSON.stringify({ ciudad: "Madrid", pais: "ESP" })), null);
-    assert.equal(leerConsultaGuardada(JSON.stringify({ ...NUEVA_YORK, lat: 500 })), null);
-    assert.equal(leerConsultaGuardada(JSON.stringify({ ...NUEVA_YORK, nombre: 7 })), null);
-    assert.equal(leerConsultaGuardada(JSON.stringify({ lat: 1, lon: 1 })), null);
+    expect(leerConsultaGuardada(JSON.stringify({ ciudad: "<script>" }))).toBe(null);
+    expect(leerConsultaGuardada(JSON.stringify({ ciudad: "Madrid", pais: "ESP" }))).toBe(null);
+    expect(leerConsultaGuardada(JSON.stringify({ ...NUEVA_YORK, lat: 500 }))).toBe(null);
+    expect(leerConsultaGuardada(JSON.stringify({ ...NUEVA_YORK, nombre: 7 }))).toBe(null);
+    expect(leerConsultaGuardada(JSON.stringify({ lat: 1, lon: 1 }))).toBe(null);
   });
 });
 
 describe("textoDeConsulta", () => {
   it("arma el texto del buscador", () => {
-    assert.equal(textoDeConsulta({ ciudad: "Madrid" }), "Madrid");
-    assert.equal(textoDeConsulta({ ciudad: "Madrid", pais: "ES" }), "Madrid, España");
-    assert.equal(
-      textoDeConsulta({ ciudad: "Tokio", pais: "JP", nombre: "Tokio" }),
-      "Tokio, Japón",
-    );
-    assert.equal(textoDeConsulta(NUEVA_YORK), "Nueva York, Estados Unidos");
+    expect(textoDeConsulta({ ciudad: "Madrid" })).toBe("Madrid");
+    expect(textoDeConsulta({ ciudad: "Madrid", pais: "ES" })).toBe("Madrid, España");
+    expect(textoDeConsulta({ ciudad: "Tokio", pais: "JP", nombre: "Tokio" })).toBe("Tokio, Japón");
+    expect(textoDeConsulta(NUEVA_YORK)).toBe("Nueva York, Estados Unidos");
   });
 });

@@ -1,6 +1,5 @@
-// Import relativo: este módulo también corre en el runner de tests de Node, sin alias.
-import { nombrePais } from "./formatoClima.ts";
-import type { Sugerencia } from "../types/geocoding.ts";
+import { nombrePais } from "./formatoClima";
+import type { Sugerencia } from "../types/geocoding";
 
 function sinTildes(texto: string): string {
   return texto.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLocaleLowerCase("es");

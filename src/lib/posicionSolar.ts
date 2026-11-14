@@ -1,6 +1,5 @@
-// Imports relativos: este módulo también corre en el runner de tests de Node, sin alias.
-import { esDeDia, segundosDelDiaLocal } from "./resolverCielo.ts";
-import type { ClimaActual } from "../types/clima.ts";
+import { esDeDia, segundosDelDiaLocal } from "./resolverCielo";
+import type { ClimaActual } from "../types/clima";
 
 const SEGUNDOS_POR_DIA = 86_400;
 
