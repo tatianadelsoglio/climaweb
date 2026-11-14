@@ -2,7 +2,7 @@
 import type { Sugerencia } from "../types/geocoding.ts";
 
 /** Mínimo de caracteres de la ciudad para pedir sugerencias (cliente y servidor). */
-export const MINIMO_CARACTERES = 2;
+export const MINIMO_CARACTERES = 3;
 export const LIMITE_SUGERENCIAS = 5;
 export const DEMORA_SUGERENCIAS_MS = 300;
 
