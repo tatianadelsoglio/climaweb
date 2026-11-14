@@ -1,6 +1,7 @@
 export interface BusquedaValida {
   ciudad: string;
-  pais: string;
+  /** Código ISO de 2 letras; opcional. */
+  pais?: string;
 }
 
 const CIUDAD_MAX = 100;
@@ -16,11 +17,14 @@ export function validarBusqueda(
   const ciudadLimpia = ciudad?.trim() ?? "";
   const paisLimpio = pais?.trim() ?? "";
 
-  if (ciudadLimpia === "" || paisLimpio === "") {
-    return { valida: false, mensaje: "Los parámetros ciudad y pais son obligatorios." };
+  if (ciudadLimpia === "") {
+    return { valida: false, mensaje: "El parámetro ciudad es obligatorio." };
   }
   if (ciudadLimpia.length > CIUDAD_MAX || !CIUDAD_REGEX.test(ciudadLimpia)) {
     return { valida: false, mensaje: "El parámetro ciudad no es válido." };
+  }
+  if (paisLimpio === "") {
+    return { valida: true, datos: { ciudad: ciudadLimpia } };
   }
   if (!PAIS_REGEX.test(paisLimpio)) {
     return {

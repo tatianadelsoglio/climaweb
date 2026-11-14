@@ -1,7 +1,9 @@
+import type { BusquedaValida } from "@/lib/validarBusqueda";
 import type { ClimaActual, CodigoError } from "@/types/clima";
 
 const OPENWEATHER_URL = "https://api.openweathermap.org/data/2.5/weather";
 const TIMEOUT_MS = 8000;
+const MS_A_KMH = 3.6;
 
 export class OpenWeatherError extends Error {
   constructor(
@@ -16,8 +18,17 @@ export class OpenWeatherError extends Error {
 
 interface OpenWeatherRespuesta {
   name: string;
-  sys: { country: string };
-  main: { temp: number; temp_max: number; temp_min: number };
+  timezone: number;
+  sys: { country: string; sunrise?: unknown; sunset?: unknown };
+  main: {
+    temp: number;
+    temp_max: number;
+    temp_min: number;
+    feels_like: number;
+    humidity: number;
+  };
+  wind: { speed: number; deg?: unknown };
+  weather: [{ id: number; description: string }, ...unknown[]];
 }
 
 function esNumero(valor: unknown): valor is number {
@@ -28,17 +39,42 @@ function esObjeto(valor: unknown): valor is Record<string, unknown> {
   return typeof valor === "object" && valor !== null;
 }
 
+function esCondicionValida(valor: unknown): boolean {
+  if (!Array.isArray(valor) || valor.length === 0) return false;
+  const [condicion]: unknown[] = valor;
+  return (
+    esObjeto(condicion) &&
+    esNumero(condicion.id) &&
+    typeof condicion.description === "string"
+  );
+}
+
 function esRespuestaValida(datos: unknown): datos is OpenWeatherRespuesta {
-  if (!esObjeto(datos) || !esObjeto(datos.main) || !esObjeto(datos.sys)) {
+  if (
+    !esObjeto(datos) ||
+    !esObjeto(datos.main) ||
+    !esObjeto(datos.sys) ||
+    !esObjeto(datos.wind)
+  ) {
     return false;
   }
   return (
     typeof datos.name === "string" &&
     typeof datos.sys.country === "string" &&
+    esNumero(datos.timezone) &&
     esNumero(datos.main.temp) &&
     esNumero(datos.main.temp_max) &&
-    esNumero(datos.main.temp_min)
+    esNumero(datos.main.temp_min) &&
+    esNumero(datos.main.feels_like) &&
+    esNumero(datos.main.humidity) &&
+    esNumero(datos.wind.speed) &&
+    esCondicionValida(datos.weather)
   );
+}
+
+/** OpenWeather omite (o manda 0) amanecer y atardecer durante el día o la noche polar. */
+function instanteOpcional(valor: unknown): number | null {
+  return esNumero(valor) && valor > 0 ? valor : null;
 }
 
 function errorDeEstado(status: number): OpenWeatherError {
@@ -72,13 +108,13 @@ function errorDeEstado(status: number): OpenWeatherError {
 }
 
 export async function obtenerClima(
-  ciudad: string,
-  pais: string,
+  { ciudad, pais }: BusquedaValida,
   apiKey: string,
 ): Promise<ClimaActual> {
   const url = new URL(OPENWEATHER_URL);
-  url.searchParams.set("q", `${ciudad},${pais}`);
+  url.searchParams.set("q", pais ? `${ciudad},${pais}` : ciudad);
   url.searchParams.set("units", "metric");
+  url.searchParams.set("lang", "es");
   url.searchParams.set("appid", apiKey);
 
   let respuesta: Response;
@@ -121,11 +157,23 @@ export async function obtenerClima(
     );
   }
 
+  const [condicion] = datos.weather;
   return {
     ciudad: datos.name,
     pais: datos.sys.country,
     temperatura: datos.main.temp,
     temperaturaMaxima: datos.main.temp_max,
     temperaturaMinima: datos.main.temp_min,
+    sensacionTermica: datos.main.feels_like,
+    humedad: datos.main.humidity,
+    viento: {
+      velocidad: datos.wind.speed * MS_A_KMH,
+      direccion: esNumero(datos.wind.deg) ? datos.wind.deg : null,
+    },
+    condicion: { codigo: condicion.id, descripcion: condicion.description },
+    amanecer: instanteOpcional(datos.sys.sunrise),
+    atardecer: instanteOpcional(datos.sys.sunset),
+    zonaHoraria: datos.timezone,
+    momento: Math.floor(Date.now() / 1000),
   };
 }

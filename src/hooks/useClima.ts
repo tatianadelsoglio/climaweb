@@ -13,19 +13,38 @@ const MENSAJE_RED = "No se pudo conectar. Revisá tu conexión e intentá de nue
 
 const MENSAJE_INESPERADO = "El servicio del clima no está disponible por el momento.";
 
+function esObjeto(valor: unknown): valor is Record<string, unknown> {
+  return typeof valor === "object" && valor !== null;
+}
+
+function esNumero(valor: unknown): valor is number {
+  return typeof valor === "number" && Number.isFinite(valor);
+}
+
+function esNumeroONulo(valor: unknown): valor is number | null {
+  return valor === null || esNumero(valor);
+}
+
 function esClimaActual(datos: unknown): datos is ClimaActual {
-  if (typeof datos !== "object" || datos === null) return false;
+  if (!esObjeto(datos) || !esObjeto(datos.viento) || !esObjeto(datos.condicion)) {
+    return false;
+  }
   return (
-    "ciudad" in datos &&
     typeof datos.ciudad === "string" &&
-    "pais" in datos &&
     typeof datos.pais === "string" &&
-    "temperatura" in datos &&
-    typeof datos.temperatura === "number" &&
-    "temperaturaMaxima" in datos &&
-    typeof datos.temperaturaMaxima === "number" &&
-    "temperaturaMinima" in datos &&
-    typeof datos.temperaturaMinima === "number"
+    esNumero(datos.temperatura) &&
+    esNumero(datos.temperaturaMaxima) &&
+    esNumero(datos.temperaturaMinima) &&
+    esNumero(datos.sensacionTermica) &&
+    esNumero(datos.humedad) &&
+    esNumero(datos.viento.velocidad) &&
+    esNumeroONulo(datos.viento.direccion) &&
+    esNumero(datos.condicion.codigo) &&
+    typeof datos.condicion.descripcion === "string" &&
+    esNumeroONulo(datos.amanecer) &&
+    esNumeroONulo(datos.atardecer) &&
+    esNumero(datos.zonaHoraria) &&
+    esNumero(datos.momento)
   );
 }
 

@@ -34,11 +34,7 @@ export async function GET(
   }
 
   try {
-    const clima = await obtenerClima(
-      validacion.datos.ciudad,
-      validacion.datos.pais,
-      apiKey,
-    );
+    const clima = await obtenerClima(validacion.datos, apiKey);
     return NextResponse.json(clima);
   } catch (error) {
     if (error instanceof OpenWeatherError) {
