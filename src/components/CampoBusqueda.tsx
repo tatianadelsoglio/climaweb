@@ -18,7 +18,7 @@ interface CampoBusquedaProps {
   onElegirSugerencia: (sugerencia: Sugerencia) => void;
 }
 
-const ID_CAMPO = "busqueda-ciudad";
+export const ID_CAMPO = "busqueda-ciudad";
 const ID_ERROR = "busqueda-ciudad-error";
 const ID_LISTA = "busqueda-ciudad-sugerencias";
 const PREFIJO_OPCION = "sugerencia";

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import AnuncioEstado from "@/components/AnuncioEstado";
-import CampoBusqueda from "@/components/CampoBusqueda";
+import CampoBusqueda, { ID_CAMPO } from "@/components/CampoBusqueda";
 import AlertaUbicacion from "@/components/AlertaUbicacion";
 import Firma from "@/components/Firma";
 import Encabezado from "@/components/Encabezado";
@@ -77,6 +77,20 @@ export default function AppClima() {
     setErrorCampo(null);
     autocompletado.cerrar();
     ubicacion.ubicar();
+  }
+
+  /**
+   * Al cerrar el aviso se desmonta su botón: el foco vuelve al botón que pidió la
+   * ubicación o, si ya no está, al buscador (WCAG 2.4.3).
+   */
+  function cerrarAvisoUbicacion() {
+    const origen = origenDelFocoRef.current;
+    ubicacion.cancelar();
+    const destino =
+      origen instanceof HTMLElement && origen.isConnected && origen !== document.body
+        ? origen
+        : document.getElementById(ID_CAMPO);
+    destino?.focus();
   }
 
   function cambiarTexto(valor: string) {
@@ -159,7 +173,7 @@ export default function AppClima() {
       />
 
       {(ubicacion.estado === "denegado" || ubicacion.estado === "no-disponible") && (
-        <AlertaUbicacion tipo={ubicacion.estado} onCerrar={ubicacion.cancelar} />
+        <AlertaUbicacion tipo={ubicacion.estado} onCerrar={cerrarAvisoUbicacion} />
       )}
 
       <main ref={contenedorRef} tabIndex={-1} className="flex flex-1 flex-col outline-none">
