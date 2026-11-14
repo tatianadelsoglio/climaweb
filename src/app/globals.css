@@ -175,9 +175,10 @@
  * interior, como en pen.dev, para no sumar alto; se cambia con
  * --glass-borde-ancho y --glass-borde-color. Sin backdrop-filter, o con
  * prefers-reduced-transparency, pasa a un panel sólido: el mismo vidrio ya
- * compuesto sobre el tono más claro del cielo, así el contraste verificado se
- * mantiene. 10 % y 16 % de blanco equivalen a --color-glass (0x1A) y
- * --color-glass-strong (0x29) ya compuestos.
+ * compuesto sobre el color de arriba del cielo (10 % y 16 % de blanco
+ * equivalen a --color-glass 0x1A y --color-glass-strong 0x29). Así el texto
+ * atenuado queda ≥ 5.4:1 sobre el sólido fuerte y ≥ 6.3:1 sobre el común en
+ * los 8 cielos.
  */
 @utility glass {
   background-color: var(--color-glass);
@@ -185,12 +186,12 @@
   backdrop-filter: blur(24px);
 
   @supports not (backdrop-filter: blur(24px)) {
-    background-color: color-mix(in srgb, var(--color-fg) 10%, var(--color-sky-bottom));
+    background-color: color-mix(in srgb, var(--color-fg) 10%, var(--color-sky-top));
   }
 
   @media (prefers-reduced-transparency: reduce) {
     backdrop-filter: none;
-    background-color: color-mix(in srgb, var(--color-fg) 10%, var(--color-sky-bottom));
+    background-color: color-mix(in srgb, var(--color-fg) 10%, var(--color-sky-top));
   }
 }
 
@@ -200,12 +201,12 @@
   backdrop-filter: blur(24px);
 
   @supports not (backdrop-filter: blur(24px)) {
-    background-color: color-mix(in srgb, var(--color-fg) 16%, var(--color-sky-bottom));
+    background-color: color-mix(in srgb, var(--color-fg) 16%, var(--color-sky-top));
   }
 
   @media (prefers-reduced-transparency: reduce) {
     backdrop-filter: none;
-    background-color: color-mix(in srgb, var(--color-fg) 16%, var(--color-sky-bottom));
+    background-color: color-mix(in srgb, var(--color-fg) 16%, var(--color-sky-top));
   }
 }
 
