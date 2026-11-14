@@ -5,7 +5,7 @@ import {
   resumenDeHoy,
   type FranjaPronostico,
 } from "@/lib/pronostico";
-import type { BusquedaValida } from "@/lib/validarBusqueda";
+import type { BusquedaValida, CoordenadasValidas } from "@/lib/validarBusqueda";
 import type { ClimaActual } from "@/types/clima";
 
 const URL_CLIMA = "https://api.openweathermap.org/data/2.5/weather";
@@ -91,9 +91,17 @@ async function pedirFranjas(url: URL): Promise<FranjaPronostico[] | null> {
   }
 }
 
-function urlDe(base: string, { ciudad, pais }: BusquedaValida, apiKey: string): URL {
+export type UbicacionClima = BusquedaValida | CoordenadasValidas;
+
+function urlDe(base: string, ubicacion: UbicacionClima, apiKey: string): URL {
   const url = new URL(base);
-  url.searchParams.set("q", pais ? `${ciudad},${pais}` : ciudad);
+  if ("lat" in ubicacion) {
+    url.searchParams.set("lat", String(ubicacion.lat));
+    url.searchParams.set("lon", String(ubicacion.lon));
+  } else {
+    const { ciudad, pais } = ubicacion;
+    url.searchParams.set("q", pais ? `${ciudad},${pais}` : ciudad);
+  }
   url.searchParams.set("units", "metric");
   url.searchParams.set("lang", "es");
   url.searchParams.set("appid", apiKey);
@@ -101,12 +109,12 @@ function urlDe(base: string, { ciudad, pais }: BusquedaValida, apiKey: string): 
 }
 
 export async function obtenerClima(
-  busqueda: BusquedaValida,
+  ubicacion: UbicacionClima,
   apiKey: string,
 ): Promise<ClimaActual> {
   const [datos, franjas] = await Promise.all([
-    pedirClima(urlDe(URL_CLIMA, busqueda, apiKey)),
-    pedirFranjas(urlDe(URL_PRONOSTICO, busqueda, apiKey)),
+    pedirClima(urlDe(URL_CLIMA, ubicacion, apiKey)),
+    pedirFranjas(urlDe(URL_PRONOSTICO, ubicacion, apiKey)),
   ]);
 
   const [condicion] = datos.weather;

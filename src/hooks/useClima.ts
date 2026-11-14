@@ -7,8 +7,47 @@ import {
   resolverCielo,
   type Cielo,
 } from "@/lib/resolverCielo";
-import type { BusquedaValida } from "@/lib/validarBusqueda";
+import type { BusquedaValida, CoordenadasValidas } from "@/lib/validarBusqueda";
 import type { ClimaActual, CodigoError, DiaPronostico, ErrorApi } from "@/types/clima";
+
+/** Consulta por coordenadas: autocompletado o geolocalización. */
+export interface ConsultaCoordenadas extends CoordenadasValidas {
+  /** Cómo se nombra la consulta mientras carga o si falla («tu ubicación»). */
+  etiqueta: string;
+  /** Nombre en español elegido por la persona; reemplaza al que informa el clima. */
+  nombre?: string;
+  /** Código ISO del país elegido; reemplaza al que informa el clima. */
+  pais?: string;
+}
+
+export type ConsultaClima = BusquedaValida | ConsultaCoordenadas;
+
+function esPorCoordenadas(consulta: ConsultaClima): consulta is ConsultaCoordenadas {
+  return "lat" in consulta;
+}
+
+export function etiquetaDeConsulta(consulta: ConsultaClima): string {
+  return esPorCoordenadas(consulta) ? consulta.etiqueta : consulta.ciudad;
+}
+
+function parametrosDe(consulta: ConsultaClima): URLSearchParams {
+  if (esPorCoordenadas(consulta)) {
+    return new URLSearchParams({ lat: String(consulta.lat), lon: String(consulta.lon) });
+  }
+  const params = new URLSearchParams({ ciudad: consulta.ciudad });
+  if (consulta.pais) params.set("pais", consulta.pais);
+  return params;
+}
+
+/** El nombre elegido en el autocompletado (en español) pesa más que el del proveedor. */
+function conNombreElegido(clima: ClimaActual, consulta: ConsultaClima): ClimaActual {
+  if (!esPorCoordenadas(consulta)) return clima;
+  return {
+    ...clima,
+    ciudad: consulta.nombre ?? clima.ciudad,
+    pais: consulta.pais ?? clima.pais,
+  };
+}
 
 export type TipoError = "ciudad" | "servicio";
 
@@ -114,25 +153,22 @@ export function useClima() {
     cielo: CIELO_INICIAL,
   });
   const controladorRef = useRef<AbortController | null>(null);
-  const ultimaBusquedaRef = useRef<BusquedaValida | null>(null);
+  const ultimaConsultaRef = useRef<ConsultaClima | null>(null);
 
   useEffect(() => () => controladorRef.current?.abort(), []);
 
-  const buscar = useCallback(async (busqueda: BusquedaValida) => {
+  const buscar = useCallback(async (consulta: ConsultaClima) => {
     controladorRef.current?.abort();
     const controlador = new AbortController();
     controladorRef.current = controlador;
-    ultimaBusquedaRef.current = busqueda;
+    ultimaConsultaRef.current = consulta;
 
-    const { ciudad } = busqueda;
+    const etiqueta = etiquetaDeConsulta(consulta);
     // Mientras carga se mantiene el cielo anterior.
-    setResultado((previo) => ({ estado: "cargando", consulta: ciudad, cielo: previo.cielo }));
-
-    const params = new URLSearchParams({ ciudad });
-    if (busqueda.pais) params.set("pais", busqueda.pais);
+    setResultado((previo) => ({ estado: "cargando", consulta: etiqueta, cielo: previo.cielo }));
 
     try {
-      const respuesta = await fetch(`/api/weather?${params.toString()}`, {
+      const respuesta = await fetch(`/api/weather?${parametrosDe(consulta).toString()}`, {
         signal: controlador.signal,
       });
       const datos: unknown = await respuesta.json().catch(() => null);
@@ -140,26 +176,27 @@ export function useClima() {
 
       if (!respuesta.ok) {
         if (!esErrorApi(datos)) {
-          setResultado(estadoDeError("servicio", ciudad, MENSAJE_INESPERADO));
+          setResultado(estadoDeError("servicio", etiqueta, MENSAJE_INESPERADO));
           return;
         }
         const tipo = CODIGOS_DE_CIUDAD.includes(datos.error.codigo) ? "ciudad" : "servicio";
-        setResultado(estadoDeError(tipo, ciudad, datos.error.mensaje));
+        setResultado(estadoDeError(tipo, etiqueta, datos.error.mensaje));
         return;
       }
       if (!esClimaActual(datos)) {
-        setResultado(estadoDeError("servicio", ciudad, MENSAJE_INESPERADO));
+        setResultado(estadoDeError("servicio", etiqueta, MENSAJE_INESPERADO));
         return;
       }
-      setResultado({ estado: "exito", clima: datos, cielo: resolverCielo(datos) });
+      const clima = conNombreElegido(datos, consulta);
+      setResultado({ estado: "exito", clima, cielo: resolverCielo(clima) });
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
-      setResultado(estadoDeError("servicio", ciudad, MENSAJE_RED));
+      setResultado(estadoDeError("servicio", etiqueta, MENSAJE_RED));
     }
   }, []);
 
   const reintentar = useCallback(() => {
-    if (ultimaBusquedaRef.current) void buscar(ultimaBusquedaRef.current);
+    if (ultimaConsultaRef.current) void buscar(ultimaConsultaRef.current);
   }, [buscar]);
 
   return { resultado, buscar, reintentar };

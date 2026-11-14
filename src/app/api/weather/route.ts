@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { OpenWeatherError } from "@/lib/openWeatherHttp";
 import { obtenerClima } from "@/lib/openWeatherService";
-import { validarBusqueda } from "@/lib/validarBusqueda";
+import { validarBusqueda, validarCoordenadas } from "@/lib/validarBusqueda";
 import type { CodigoError, ErrorApi, RespuestaClima } from "@/types/clima";
 
 function respuestaError(
@@ -26,10 +26,11 @@ export async function GET(
   }
 
   const { searchParams } = request.nextUrl;
-  const validacion = validarBusqueda(
-    searchParams.get("ciudad"),
-    searchParams.get("pais"),
-  );
+  // Con lat o lon se consulta por coordenadas (autocompletado, geolocalización); si no, por ciudad.
+  const porCoordenadas = searchParams.has("lat") || searchParams.has("lon");
+  const validacion = porCoordenadas
+    ? validarCoordenadas(searchParams.get("lat"), searchParams.get("lon"))
+    : validarBusqueda(searchParams.get("ciudad"), searchParams.get("pais"));
   if (!validacion.valida) {
     return respuestaError("PARAMETROS_INVALIDOS", validacion.mensaje, 400);
   }

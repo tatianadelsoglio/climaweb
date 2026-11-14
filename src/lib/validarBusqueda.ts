@@ -38,3 +38,30 @@ export function validarBusqueda(
     datos: { ciudad: ciudadLimpia, pais: paisLimpio.toUpperCase() },
   };
 }
+
+export interface CoordenadasValidas {
+  lat: number;
+  lon: number;
+}
+
+function numeroDecimal(texto: string | null): number | null {
+  const limpio = texto?.trim() ?? "";
+  if (limpio === "" || !/^-?\d+(\.\d+)?$/.test(limpio)) return null;
+  return Number(limpio);
+}
+
+/** Valida latitud (−90 a 90) y longitud (−180 a 180) recibidas como texto. */
+export function validarCoordenadas(
+  lat: string | null,
+  lon: string | null,
+): { valida: true; datos: CoordenadasValidas } | { valida: false; mensaje: string } {
+  const latitud = numeroDecimal(lat);
+  const longitud = numeroDecimal(lon);
+  if (latitud === null || longitud === null) {
+    return { valida: false, mensaje: "Los parámetros lat y lon son obligatorios y numéricos." };
+  }
+  if (latitud < -90 || latitud > 90 || longitud < -180 || longitud > 180) {
+    return { valida: false, mensaje: "Las coordenadas están fuera de rango." };
+  }
+  return { valida: true, datos: { lat: latitud, lon: longitud } };
+}

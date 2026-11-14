@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { validarBusqueda } from "./validarBusqueda.ts";
+import { validarBusqueda, validarCoordenadas } from "./validarBusqueda.ts";
 
 describe("validarBusqueda", () => {
   it("acepta la ciudad sola: el país es opcional", () => {
@@ -57,5 +57,33 @@ describe("validarBusqueda", () => {
         "El parámetro pais debe ser un código de 2 letras (ej: AR).",
       );
     }
+  });
+});
+
+describe("validarCoordenadas", () => {
+  it("acepta coordenadas válidas", () => {
+    assert.deepEqual(validarCoordenadas("-31.42", "-64.18"), {
+      valida: true,
+      datos: { lat: -31.42, lon: -64.18 },
+    });
+  });
+
+  it("acepta los límites y el cero", () => {
+    assert.equal(validarCoordenadas("90", "180").valida, true);
+    assert.equal(validarCoordenadas("-90", "-180").valida, true);
+    assert.equal(validarCoordenadas("0", "0").valida, true);
+  });
+
+  it("rechaza valores faltantes, vacíos o no numéricos", () => {
+    assert.equal(validarCoordenadas(null, "10").valida, false);
+    assert.equal(validarCoordenadas("10", "").valida, false);
+    assert.equal(validarCoordenadas("abc", "10").valida, false);
+    assert.equal(validarCoordenadas("1e3", "10").valida, false);
+    assert.equal(validarCoordenadas("Infinity", "10").valida, false);
+  });
+
+  it("rechaza coordenadas fuera de rango", () => {
+    assert.equal(validarCoordenadas("90.1", "0").valida, false);
+    assert.equal(validarCoordenadas("0", "-180.5").valida, false);
   });
 });
