@@ -1,4 +1,5 @@
 import type { EstadoClima } from "@/hooks/useClima";
+import type { EstadoUbicacion } from "@/hooks/useGeolocalizacion";
 import { descripcionCondicion } from "@/lib/condiciones";
 import { formatearTemperatura, nombrePais } from "@/lib/formatoClima";
 import type { Unidad } from "@/lib/unidades";
@@ -6,6 +7,7 @@ import type { Unidad } from "@/lib/unidades";
 interface AnuncioEstadoProps {
   resultado: EstadoClima;
   unidad: Unidad;
+  estadoUbicacion: EstadoUbicacion;
 }
 
 function textoAnuncio(resultado: EstadoClima, unidad: Unidad): string {
@@ -24,10 +26,10 @@ function textoAnuncio(resultado: EstadoClima, unidad: Unidad): string {
 }
 
 /** Región aria-live única que anuncia cada cambio de estado de la búsqueda. */
-export default function AnuncioEstado({ resultado, unidad }: AnuncioEstadoProps) {
+export default function AnuncioEstado({ resultado, unidad, estadoUbicacion }: AnuncioEstadoProps) {
   return (
     <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-      {textoAnuncio(resultado, unidad)}
+      {estadoUbicacion === "buscando" ? "Buscando tu ubicación…" : textoAnuncio(resultado, unidad)}
     </p>
   );
 }

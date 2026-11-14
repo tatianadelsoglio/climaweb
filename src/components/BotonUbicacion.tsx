@@ -1,7 +1,10 @@
-import { LocateFixed } from "lucide-react";
+import { LoaderCircle, LocateFixed } from "lucide-react";
+import type { EstadoUbicacion } from "@/hooks/useGeolocalizacion";
 
 interface BotonUbicacionProps {
   variante: "encabezado" | "primario";
+  estado: EstadoUbicacion;
+  onUbicar: () => void;
 }
 
 const ETIQUETA = "Usar mi ubicación";
@@ -22,19 +25,25 @@ const CLASES: Record<BotonUbicacionProps["variante"], { boton: string; icono: st
 };
 
 /**
- * Lugar reservado para la geolocalización (Fase 3b): se muestra como en el
- * diseño pero todavía no está conectado, así que queda deshabilitado.
+ * Pide la ubicación del dispositivo. Mientras busca muestra un indicador y no
+ * admite otro pedido; con la ubicación no disponible el botón del encabezado se
+ * atenúa, como en el diseño, pero se puede volver a intentar.
  */
-export default function BotonUbicacion({ variante }: BotonUbicacionProps) {
+export default function BotonUbicacion({ variante, estado, onUbicar }: BotonUbicacionProps) {
   const clases = CLASES[variante];
+  const buscando = estado === "buscando";
+  const Icono = buscando ? LoaderCircle : LocateFixed;
+  const atenuado = variante === "encabezado" && estado === "no-disponible";
+
   return (
     <button
       type="button"
-      disabled
-      title="Disponible próximamente"
-      className={`${clases.boton} disabled:cursor-not-allowed`}
+      onClick={onUbicar}
+      disabled={buscando}
+      aria-busy={buscando}
+      className={`${clases.boton} disabled:cursor-wait ${atenuado ? "opacity-50" : ""}`}
     >
-      <LocateFixed aria-hidden className={clases.icono} />
+      <Icono aria-hidden className={`${clases.icono} ${buscando ? "animate-spin" : ""}`} />
       <span className={clases.etiqueta}>{ETIQUETA}</span>
     </button>
   );

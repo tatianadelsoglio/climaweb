@@ -1,11 +1,14 @@
 import type { ReactNode } from "react";
 import BotonUbicacion from "@/components/BotonUbicacion";
 import SelectorUnidad from "@/components/SelectorUnidad";
+import type { EstadoUbicacion } from "@/hooks/useGeolocalizacion";
 import type { Unidad } from "@/lib/unidades";
 
 interface EncabezadoProps {
   /** Campo de búsqueda. */
   buscador: ReactNode;
+  estadoUbicacion: EstadoUbicacion;
+  onUbicar: () => void;
   unidad: Unidad;
   onCambiarUnidad: (unidad: Unidad) => void;
 }
@@ -14,7 +17,13 @@ interface EncabezadoProps {
  * Mobile: marca y unidad arriba, buscador debajo.
  * Desktop: marca (200) · buscador centrado · unidad (200).
  */
-export default function Encabezado({ buscador, unidad, onCambiarUnidad }: EncabezadoProps) {
+export default function Encabezado({
+  buscador,
+  estadoUbicacion,
+  onUbicar,
+  unidad,
+  onCambiarUnidad,
+}: EncabezadoProps) {
   return (
     <header className="grid grid-cols-[1fr_auto] items-center px-xl lg:grid-cols-[200px_minmax(0,1fr)_200px] lg:gap-2xl lg:px-gutter lg:py-3xl">
       <p className="flex items-center gap-sm py-sm lg:gap-field lg:py-0">
@@ -27,7 +36,7 @@ export default function Encabezado({ buscador, unidad, onCambiarUnidad }: Encabe
       {/* El buscador va antes en el DOM para que el orden de tabulación siga al visual. */}
       <div className="relative col-span-2 row-start-2 flex items-start gap-sm pt-sm lg:static lg:col-span-1 lg:col-start-2 lg:row-start-1 lg:justify-center lg:gap-md lg:pt-0">
         {buscador}
-        <BotonUbicacion variante="encabezado" />
+        <BotonUbicacion variante="encabezado" estado={estadoUbicacion} onUbicar={onUbicar} />
       </div>
 
       <div className="col-start-2 row-start-1 justify-self-end py-sm lg:col-start-3 lg:py-0">

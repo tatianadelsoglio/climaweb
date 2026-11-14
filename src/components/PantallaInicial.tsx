@@ -3,6 +3,7 @@
 import { Sun } from "lucide-react";
 import BotonUbicacion from "@/components/BotonUbicacion";
 import ChipCiudad from "@/components/ChipCiudad";
+import type { EstadoUbicacion } from "@/hooks/useGeolocalizacion";
 import { useFechaHoy } from "@/hooks/useFechaHoy";
 import type { BusquedaValida } from "@/lib/validarBusqueda";
 
@@ -26,9 +27,15 @@ const SUGERENCIAS: readonly CiudadSugerida[] = [
 
 interface PantallaInicialProps {
   onElegirCiudad: (ciudad: CiudadSugerida) => void;
+  estadoUbicacion: EstadoUbicacion;
+  onUbicar: () => void;
 }
 
-export default function PantallaInicial({ onElegirCiudad }: PantallaInicialProps) {
+export default function PantallaInicial({
+  onElegirCiudad,
+  estadoUbicacion,
+  onUbicar,
+}: PantallaInicialProps) {
   const fecha = useFechaHoy();
 
   return (
@@ -57,7 +64,7 @@ export default function PantallaInicial({ onElegirCiudad }: PantallaInicialProps
       </p>
 
       <div className="flex flex-col gap-xl lg:flex-row lg:items-center lg:gap-lg lg:pt-sm">
-        <BotonUbicacion variante="primario" />
+        <BotonUbicacion variante="primario" estado={estadoUbicacion} onUbicar={onUbicar} />
 
         <div className="flex flex-col gap-field pt-sm lg:flex-row lg:items-center lg:gap-lg lg:pt-0">
           <p className="text-caption text-fg-muted lg:text-body">o probá con</p>

@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import AnuncioEstado from "@/components/AnuncioEstado";
 import CampoBusqueda from "@/components/CampoBusqueda";
+import AlertaUbicacion from "@/components/AlertaUbicacion";
 import Encabezado from "@/components/Encabezado";
 import PantallaCargando from "@/components/PantallaCargando";
 import PantallaError from "@/components/PantallaError";
@@ -12,10 +13,12 @@ import { useAutocompletado } from "@/hooks/useAutocompletado";
 import { useCieloDocumento } from "@/hooks/useCieloDocumento";
 import { useClima, type ConsultaCoordenadas } from "@/hooks/useClima";
 import { useFocoEnContenido } from "@/hooks/useFocoEnContenido";
+import { useGeolocalizacion } from "@/hooks/useGeolocalizacion";
 import { useSugerencias } from "@/hooks/useSugerencias";
 import { useUnidad } from "@/hooks/useUnidad";
 import { interpretarBusqueda } from "@/lib/parsearBusqueda";
 import { textoSugerencia } from "@/lib/sugerencias";
+import type { CoordenadasValidas } from "@/lib/validarBusqueda";
 import type { Sugerencia } from "@/types/geocoding";
 
 function consultaDeSugerencia(sugerencia: Sugerencia): ConsultaCoordenadas {
@@ -43,6 +46,27 @@ export default function AppClima() {
     resultado.estado === "exito" || resultado.estado === "error",
   );
 
+  // Si la persona sigue en el mismo elemento cuando llega la ubicación, el foco pasa al
+  // contenido (el botón puede desmontarse); si ya lo movió, no se le roba.
+  const origenDelFocoRef = useRef<Element | null>(null);
+  const alObtenerUbicacion = useCallback(
+    ({ lat, lon }: CoordenadasValidas) => {
+      if (document.activeElement === origenDelFocoRef.current) llevarFocoAlContenido();
+      setTexto("");
+      seleccionRef.current = null;
+      void buscar({ lat, lon, etiqueta: "tu ubicación" });
+    },
+    [buscar, llevarFocoAlContenido],
+  );
+  const ubicacion = useGeolocalizacion(alObtenerUbicacion);
+
+  function ubicar() {
+    origenDelFocoRef.current = document.activeElement;
+    setErrorCampo(null);
+    autocompletado.cerrar();
+    ubicacion.ubicar();
+  }
+
   function cambiarTexto(valor: string) {
     setTexto(valor);
     setErrorCampo(null);
@@ -50,6 +74,7 @@ export default function AppClima() {
 
   function buscarTexto() {
     autocompletado.cerrar();
+    ubicacion.cancelar();
     const seleccion = seleccionRef.current;
     if (seleccion && seleccion.texto === texto) {
       setErrorCampo(null);
@@ -66,6 +91,7 @@ export default function AppClima() {
   }
 
   function elegirCiudad({ nombre, busqueda }: CiudadSugerida) {
+    ubicacion.cancelar();
     cambiarTexto(nombre);
     llevarFocoAlContenido();
     void buscar(busqueda);
@@ -75,6 +101,7 @@ export default function AppClima() {
     const consulta = consultaDeSugerencia(sugerencia);
     const textoElegido = textoSugerencia(sugerencia);
     seleccionRef.current = { texto: textoElegido, consulta };
+    ubicacion.cancelar();
     cambiarTexto(textoElegido);
     autocompletado.cerrar();
     llevarFocoAlContenido();
@@ -101,6 +128,8 @@ export default function AppClima() {
       <Encabezado
         unidad={unidad}
         onCambiarUnidad={setUnidad}
+        estadoUbicacion={ubicacion.estado}
+        onUbicar={ubicar}
         buscador={
           <CampoBusqueda
             valor={texto}
@@ -117,8 +146,18 @@ export default function AppClima() {
         }
       />
 
+      {(ubicacion.estado === "denegado" || ubicacion.estado === "no-disponible") && (
+        <AlertaUbicacion tipo={ubicacion.estado} onCerrar={ubicacion.cancelar} />
+      )}
+
       <main ref={contenedorRef} tabIndex={-1} className="flex flex-1 flex-col outline-none">
-        {resultado.estado === "inicial" && <PantallaInicial onElegirCiudad={elegirCiudad} />}
+        {resultado.estado === "inicial" && (
+          <PantallaInicial
+            onElegirCiudad={elegirCiudad}
+            estadoUbicacion={ubicacion.estado}
+            onUbicar={ubicar}
+          />
+        )}
         {resultado.estado === "cargando" && <PantallaCargando consulta={resultado.consulta} />}
         {resultado.estado === "exito" && (
           <PantallaResultado clima={resultado.clima} cielo={resultado.cielo} unidad={unidad} />
@@ -134,7 +173,7 @@ export default function AppClima() {
         )}
       </main>
 
-      <AnuncioEstado resultado={resultado} unidad={unidad} />
+      <AnuncioEstado resultado={resultado} unidad={unidad} estadoUbicacion={ubicacion.estado} />
     </div>
   );
 }
