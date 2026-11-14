@@ -17,8 +17,13 @@ const figtree = Figtree({
 });
 
 export const metadata: Metadata = {
-  title: "Clima",
-  description: "Consultá el clima actual de una ciudad.",
+  title: {
+    default: "Atmósfera",
+    template: "%s · Atmósfera",
+  },
+  applicationName: "Atmósfera",
+  description:
+    "Atmósfera: el clima actual y el pronóstico de 5 días de cualquier ciudad, con un cielo que cambia según la hora local.",
 };
 
 export const viewport: Viewport = {

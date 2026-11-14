@@ -17,7 +17,7 @@ export default function Encabezado({ buscador }: EncabezadoProps) {
       <p className="flex items-center gap-sm py-sm lg:gap-field lg:py-0">
         <span aria-hidden className="size-[14px] rounded-pill bg-accent lg:size-[18px]" />
         <span className="font-display text-subtitle font-bold tracking-[-0.4px] lg:text-stat lg:tracking-[-0.5px]">
-          climaweb
+          Atmósfera
         </span>
       </p>
 
