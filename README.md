@@ -94,12 +94,12 @@ La primera versión es de 2021 y quedó marcada con el tag [`v1-2021`](https://g
 | --- | --- | --- |
 | Stack | Create React App, React 17, JavaScript | Next.js 16, React 19, TypeScript estricto, Tailwind 4 |
 | API key | Escrita en el código del cliente | Solo en el servidor, detrás de un proxy |
-| Búsqueda | Ciudad en texto y país en un `<select>`, un clic en «Buscar clima» | Un solo campo con autocompletado, geolocalización y teclado |
+| Búsqueda | Ciudad en texto y país en un `<select>`, un clic en «Buscar Clima» | Un solo campo con autocompletado, geolocalización y teclado |
 | Datos | Respuesta cruda de OpenWeather | Clima actual + pronóstico de 7 días, °C/°F |
 | Visual | Fondo celeste fijo | 8 cielos según condición y hora local |
 | Calidad | Sin tests propios | 313 tests, CI y Lighthouse |
 
-<img src="docs/screenshots/v1-2021-formulario.webp" alt="Versión de 2021 en escritorio: encabezado «Clima React App», formulario con campo de ciudad, selector de país y botón amarillo «Buscar clima» sobre fondo celeste." width="560">
+<img src="docs/screenshots/v1-2021-formulario.webp" alt="Versión de 2021 en escritorio: encabezado «Clima React App», formulario con campo de ciudad, selector de país y botón amarillo «Buscar Clima» sobre fondo celeste." width="560">
 
 _Captura de la versión de 2021 levantada desde el tag `v1-2021`: solo se muestra el formulario porque la API key de esa versión ya no es válida._
 
@@ -249,12 +249,12 @@ The first version dates from 2021 and is tagged [`v1-2021`](https://github.com/t
 | --- | --- | --- |
 | Stack | Create React App, React 17, JavaScript | Next.js 16, React 19, strict TypeScript, Tailwind 4 |
 | API key | Written in the client code | Server-only, behind a proxy |
-| Search | City as text and country in a `<select>`, one click on "Buscar clima" | A single field with autocomplete, geolocation and keyboard support |
+| Search | City as text and country in a `<select>`, one click on "Buscar Clima" | A single field with autocomplete, geolocation and keyboard support |
 | Data | Raw OpenWeather response | Current weather + 7-day forecast, °C/°F |
 | Visuals | Fixed light-blue background | 8 skies based on condition and local time |
 | Quality | No tests of its own | 313 tests, CI and Lighthouse |
 
-<img src="docs/screenshots/v1-2021-formulario.webp" alt="The 2021 version on desktop: a “Clima React App” header, a form with a city field, a country select and a yellow “Buscar clima” button on a light-blue background." width="560">
+<img src="docs/screenshots/v1-2021-formulario.webp" alt="The 2021 version on desktop: a “Clima React App” header, a form with a city field, a country select and a yellow “Buscar Clima” button on a light-blue background." width="560">
 
 _Screenshot of the 2021 version run from the `v1-2021` tag: only the form is shown because that version's API key is no longer valid._
 
