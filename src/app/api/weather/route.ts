@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { TTL, cabeceraCacheCdn } from "@/lib/cacheProveedores";
+import { limitarPorIp } from "@/lib/limitarPeticiones";
 import { ProveedorError } from "@/lib/proveedorHttp";
 import { obtenerClima } from "@/lib/openWeatherService";
 import { validarBusqueda, validarCoordenadas } from "@/lib/validarBusqueda";
@@ -19,7 +20,11 @@ function respuestaError(
 
 export async function GET(
   request: NextRequest,
-): Promise<NextResponse<RespuestaClima>> {
+): Promise<NextResponse<RespuestaClima | ErrorApi>> {
+  // Primero el límite por IP (mejor esfuerzo, por instancia): ver rateLimit.ts.
+  const limitada = await limitarPorIp(request, "weather");
+  if (limitada) return limitada;
+
   const apiKey = process.env.OPENWEATHER_API_KEY;
   if (!apiKey) {
     console.error("Falta la variable de entorno OPENWEATHER_API_KEY");

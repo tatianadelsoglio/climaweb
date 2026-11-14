@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { TTL, cabeceraCacheCdn } from "@/lib/cacheProveedores";
 import { obtenerPronostico } from "@/lib/openMeteoService";
+import { limitarPorIp } from "@/lib/limitarPeticiones";
 import { ProveedorError } from "@/lib/proveedorHttp";
 import { validarCoordenadas } from "@/lib/validarBusqueda";
 import type { CodigoError, ErrorApi, RespuestaPronostico } from "@/types/clima";
@@ -21,6 +22,10 @@ function respuestaError(
 export async function GET(
   request: NextRequest,
 ): Promise<NextResponse<RespuestaPronostico | ErrorApi>> {
+  // Primero el límite por IP (mejor esfuerzo, por instancia): ver rateLimit.ts.
+  const limitada = await limitarPorIp(request, "forecast");
+  if (limitada) return limitada;
+
   const { searchParams } = request.nextUrl;
   const validacion = validarCoordenadas(searchParams.get("lat"), searchParams.get("lon"));
   if (!validacion.valida) {

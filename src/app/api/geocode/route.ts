@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { TTL, cabeceraCacheCdn } from "@/lib/cacheProveedores";
 import { MINIMO_CARACTERES } from "@/lib/geocoding";
 import { buscarSugerencias } from "@/lib/geocodingService";
+import { limitarPorIp } from "@/lib/limitarPeticiones";
 import { ProveedorError } from "@/lib/proveedorHttp";
 import { validarBusqueda } from "@/lib/validarBusqueda";
 import type { CodigoError, ErrorApi } from "@/types/clima";
@@ -22,6 +23,10 @@ function respuestaError(
 export async function GET(
   request: NextRequest,
 ): Promise<NextResponse<RespuestaGeocoding | ErrorApi>> {
+  // Primero el límite por IP (mejor esfuerzo, por instancia): ver rateLimit.ts.
+  const limitada = await limitarPorIp(request, "geocode");
+  if (limitada) return limitada;
+
   const { searchParams } = request.nextUrl;
   const validacion = validarBusqueda(searchParams.get("ciudad"), searchParams.get("pais"));
   if (!validacion.valida) {
