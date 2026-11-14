@@ -1,3 +1,4 @@
+import { TTL, normalizarTexto, opcionesDeCache } from "@/lib/cacheProveedores";
 import { formatearCoordenada } from "@/lib/coordenadas";
 import { ProveedorError, pedirJson } from "@/lib/proveedorHttp";
 import type { BusquedaValida, CoordenadasValidas } from "@/lib/validarBusqueda";
@@ -64,7 +65,7 @@ function instanteOpcional(valor: unknown): number | null {
 }
 
 async function pedirClima(url: URL): Promise<OpenWeatherRespuesta> {
-  const datos = await pedirJson(url);
+  const datos = await pedirJson(url, opcionesDeCache(TTL.clima));
   if (!esRespuestaValida(datos)) {
     throw new ProveedorError(
       "RESPUESTA_INVALIDA",
@@ -84,7 +85,9 @@ function urlDe(ubicacion: UbicacionClima, apiKey: string): URL {
     url.searchParams.set("lon", formatearCoordenada(ubicacion.lon));
   } else {
     const { ciudad, pais } = ubicacion;
-    url.searchParams.set("q", pais ? `${ciudad},${pais}` : ciudad);
+    // Texto normalizado: «Nueva  York» y «nueva york» comparten entrada de caché.
+    const q = normalizarTexto(ciudad);
+    url.searchParams.set("q", pais ? `${q},${pais.toUpperCase()}` : q);
   }
   url.searchParams.set("units", "metric");
   url.searchParams.set("lang", "es");

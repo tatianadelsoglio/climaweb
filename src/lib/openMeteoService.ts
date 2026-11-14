@@ -1,3 +1,4 @@
+import { TTL, opcionesDeCache } from "@/lib/cacheProveedores";
 import { formatearCoordenada } from "@/lib/coordenadas";
 import { ProveedorError, pedirJson } from "@/lib/proveedorHttp";
 import { normalizarPronostico } from "@/lib/openMeteo";
@@ -5,9 +6,6 @@ import type { CoordenadasValidas } from "@/lib/validarBusqueda";
 import type { DiaPronostico } from "@/types/clima";
 
 const URL_PRONOSTICO = "https://api.open-meteo.com/v1/forecast";
-// El pronóstico diario cambia pocas veces por hora.
-const REVALIDAR_SEGUNDOS = 900;
-
 /** Hoy y los 6 días siguientes de una ubicación, con el huso de la propia ubicación. */
 export async function obtenerPronostico({ lat, lon }: CoordenadasValidas): Promise<DiaPronostico[]> {
   const url = new URL(URL_PRONOSTICO);
@@ -21,7 +19,7 @@ export async function obtenerPronostico({ lat, lon }: CoordenadasValidas): Promi
   url.searchParams.set("forecast_days", "7");
 
   const dias = normalizarPronostico(
-    await pedirJson(url, { next: { revalidate: REVALIDAR_SEGUNDOS } }),
+    await pedirJson(url, opcionesDeCache(TTL.pronostico)),
   );
   if (dias.length === 0) {
     throw new ProveedorError(

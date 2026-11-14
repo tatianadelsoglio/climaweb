@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { TTL, cabeceraCacheCdn } from "@/lib/cacheProveedores";
 import { obtenerPronostico } from "@/lib/openMeteoService";
 import { ProveedorError } from "@/lib/proveedorHttp";
 import { validarCoordenadas } from "@/lib/validarBusqueda";
@@ -9,7 +10,11 @@ function respuestaError(
   mensaje: string,
   status: number,
 ): NextResponse<ErrorApi> {
-  return NextResponse.json({ error: { codigo, mensaje } }, { status });
+  // Los errores nunca se cachean (ni en el CDN ni en el navegador).
+  return NextResponse.json(
+    { error: { codigo, mensaje } },
+    { status, headers: { "Cache-Control": "no-store" } },
+  );
 }
 
 /** Pronóstico diario (Open-Meteo, sin API key) por coordenadas: ?lat=..&lon=.. */
@@ -26,7 +31,7 @@ export async function GET(
     const dias = await obtenerPronostico(validacion.datos);
     return NextResponse.json(
       { dias },
-      { headers: { "Cache-Control": "public, max-age=300, s-maxage=900" } },
+      { headers: { "Cache-Control": cabeceraCacheCdn(TTL.pronostico) } },
     );
   } catch (error) {
     if (error instanceof ProveedorError) {

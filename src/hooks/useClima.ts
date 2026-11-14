@@ -7,6 +7,7 @@ import {
   resolverCielo,
   type Cielo,
 } from "@/lib/resolverCielo";
+import { normalizarTexto } from "@/lib/cacheProveedores";
 import { formatearCoordenada } from "@/lib/coordenadas";
 import { CLAVE_ULTIMA_CONSULTA, consultaParaGuardar } from "@/lib/ultimaConsulta";
 import { guardarAlmacenado } from "@/lib/almacenamiento";
@@ -33,13 +34,20 @@ function parametrosDe(consulta: ConsultaClima): URLSearchParams {
       lon: formatearCoordenada(consulta.lon),
     });
   }
-  const params = new URLSearchParams({ ciudad: consulta.ciudad });
+  // Texto normalizado: consultas equivalentes comparten URL y, con ella, la caché del CDN.
+  const params = new URLSearchParams({ ciudad: normalizarTexto(consulta.ciudad) });
   if (consulta.pais) params.set("pais", consulta.pais);
   return params;
 }
 
-/** El nombre elegido (en español) pesa más que el del proveedor. */
-function conNombreElegido(clima: ClimaActual, consulta: ConsultaClima): ClimaActual {
+/**
+ * El nombre elegido (en español) pesa más que el del proveedor. Además, `momento` pasa
+ * a ser la hora de este dispositivo: la respuesta puede venir de la caché del CDN
+ * (hasta 10 minutos) y la hora local mostrada y el día o la noche del cielo tienen
+ * que ser los de ahora.
+ */
+function ajustarClima(respuesta: ClimaActual, consulta: ConsultaClima): ClimaActual {
+  const clima = { ...respuesta, momento: Math.floor(Date.now() / 1000) };
   if (!esPorCoordenadas(consulta)) {
     return consulta.nombre ? { ...clima, ciudad: consulta.nombre } : clima;
   }
@@ -173,7 +181,7 @@ export function useClima() {
         setResultado(estadoDeError("servicio", etiqueta, MENSAJE_INESPERADO));
         return;
       }
-      const clima = conNombreElegido(datos, consulta);
+      const clima = ajustarClima(datos, consulta);
       const guardable = consultaParaGuardar(consulta, clima);
       if (guardable) guardarAlmacenado(CLAVE_ULTIMA_CONSULTA, JSON.stringify(guardable));
       setResultado({ estado: "exito", clima, cielo: resolverCielo(clima) });

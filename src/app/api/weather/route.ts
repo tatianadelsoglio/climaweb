@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { TTL, cabeceraCacheCdn } from "@/lib/cacheProveedores";
 import { ProveedorError } from "@/lib/proveedorHttp";
 import { obtenerClima } from "@/lib/openWeatherService";
 import { validarBusqueda, validarCoordenadas } from "@/lib/validarBusqueda";
@@ -9,7 +10,11 @@ function respuestaError(
   mensaje: string,
   status: number,
 ): NextResponse<ErrorApi> {
-  return NextResponse.json({ error: { codigo, mensaje } }, { status });
+  // Los errores nunca se cachean (ni en el CDN ni en el navegador).
+  return NextResponse.json(
+    { error: { codigo, mensaje } },
+    { status, headers: { "Cache-Control": "no-store" } },
+  );
 }
 
 export async function GET(
@@ -37,7 +42,9 @@ export async function GET(
 
   try {
     const clima = await obtenerClima(validacion.datos, apiKey);
-    return NextResponse.json(clima);
+    return NextResponse.json(clima, {
+      headers: { "Cache-Control": cabeceraCacheCdn(TTL.clima) },
+    });
   } catch (error) {
     if (error instanceof ProveedorError) {
       if (error.codigo === "SERVICIO_NO_CONFIGURADO") {

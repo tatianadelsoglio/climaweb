@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { TTL, cabeceraCacheCdn } from "@/lib/cacheProveedores";
 import { MINIMO_CARACTERES } from "@/lib/geocoding";
 import { buscarSugerencias } from "@/lib/geocodingService";
 import { ProveedorError } from "@/lib/proveedorHttp";
@@ -11,7 +12,11 @@ function respuestaError(
   mensaje: string,
   status: number,
 ): NextResponse<ErrorApi> {
-  return NextResponse.json({ error: { codigo, mensaje } }, { status });
+  // Los errores nunca se cachean (ni en el CDN ni en el navegador).
+  return NextResponse.json(
+    { error: { codigo, mensaje } },
+    { status, headers: { "Cache-Control": "no-store" } },
+  );
 }
 
 export async function GET(
@@ -34,7 +39,7 @@ export async function GET(
     const sugerencias = await buscarSugerencias(validacion.datos);
     return NextResponse.json(
       { sugerencias },
-      { headers: { "Cache-Control": "public, max-age=3600, s-maxage=86400" } },
+      { headers: { "Cache-Control": cabeceraCacheCdn(TTL.geocoding) } },
     );
   } catch (error) {
     if (error instanceof ProveedorError) {

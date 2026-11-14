@@ -1,3 +1,4 @@
+import { TTL, normalizarTexto, opcionesDeCache } from "@/lib/cacheProveedores";
 import { normalizarGeocoding } from "@/lib/geocoding";
 import { pedirJson } from "@/lib/proveedorHttp";
 import type { BusquedaValida } from "@/lib/validarBusqueda";
@@ -6,8 +7,6 @@ import type { Sugerencia } from "@/types/geocoding";
 const URL_GEOCODING = "https://geocoding-api.open-meteo.com/v1/search";
 // Se piden de más porque la normalización descarta los repetidos y recorta a 5.
 const RESULTADOS_PEDIDOS = 10;
-// Los lugares casi no cambian: se cachea para no repetir pedidos al proveedor.
-const REVALIDAR_SEGUNDOS = 86_400;
 
 /**
  * Hasta 5 lugares que coinciden con lo escrito (con language=es, ya en español),
@@ -17,11 +16,12 @@ const REVALIDAR_SEGUNDOS = 86_400;
  */
 export async function buscarSugerencias({ ciudad, pais }: BusquedaValida): Promise<Sugerencia[]> {
   const url = new URL(URL_GEOCODING);
-  url.searchParams.set("name", ciudad);
-  if (pais) url.searchParams.set("countryCode", pais);
+  // Texto normalizado: «Córd» y « córd » comparten entrada de caché.
+  url.searchParams.set("name", normalizarTexto(ciudad));
+  if (pais) url.searchParams.set("countryCode", pais.toUpperCase());
   url.searchParams.set("count", String(RESULTADOS_PEDIDOS));
   url.searchParams.set("language", "es");
   url.searchParams.set("format", "json");
 
-  return normalizarGeocoding(await pedirJson(url, { next: { revalidate: REVALIDAR_SEGUNDOS } }));
+  return normalizarGeocoding(await pedirJson(url, opcionesDeCache(TTL.geocoding)));
 }

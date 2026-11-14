@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { normalizarTexto } from "@/lib/cacheProveedores";
 import {
   DEMORA_SUGERENCIAS_MS,
   MINIMO_CARACTERES,
@@ -50,7 +51,8 @@ export function useSugerencias(
   busqueda: BusquedaTexto | null,
   demoraMs: number = DEMORA_SUGERENCIAS_MS,
 ): { sugerencias: Sugerencia[]; cargando: boolean } {
-  const ciudad = busqueda?.ciudad.trim() ?? "";
+  // Normalizado: «Córd» y « córd » comparten URL y, con ella, la caché del CDN.
+  const ciudad = normalizarTexto(busqueda?.ciudad ?? "");
   const pais = busqueda?.pais ?? "";
   const clave = busqueda && ciudad.length >= MINIMO_CARACTERES ? `${ciudad}|${pais}` : null;
 
