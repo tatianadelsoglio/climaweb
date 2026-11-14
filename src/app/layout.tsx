@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Figtree } from "next/font/google";
 import "./globals.css";
 
@@ -19,6 +19,12 @@ const figtree = Figtree({
 export const metadata: Metadata = {
   title: "Clima",
   description: "Consultá el clima actual de una ciudad.",
+};
+
+export const viewport: Viewport = {
+  // --color-sky-top del cielo inicial (clear-day); useCieloDocumento lo
+  // actualiza cuando cambia el cielo.
+  themeColor: "#173F86",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

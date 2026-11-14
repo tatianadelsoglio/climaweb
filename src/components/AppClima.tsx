@@ -8,6 +8,7 @@ import PantallaCargando from "@/components/PantallaCargando";
 import PantallaError from "@/components/PantallaError";
 import PantallaInicial, { type CiudadSugerida } from "@/components/PantallaInicial";
 import PantallaResultado from "@/components/PantallaResultado";
+import { useCieloDocumento } from "@/hooks/useCieloDocumento";
 import { useClima } from "@/hooks/useClima";
 import { useFocoEnContenido } from "@/hooks/useFocoEnContenido";
 import { interpretarBusqueda } from "@/lib/parsearBusqueda";
@@ -16,6 +17,7 @@ export default function AppClima() {
   const { resultado, buscar, reintentar } = useClima();
   const [texto, setTexto] = useState("");
   const [errorCampo, setErrorCampo] = useState<string | null>(null);
+  useCieloDocumento(resultado.cielo);
   const { contenedorRef, llevarFocoAlContenido } = useFocoEnContenido(
     resultado.estado,
     resultado.estado === "exito" || resultado.estado === "error",
