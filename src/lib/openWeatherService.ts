@@ -1,5 +1,5 @@
 import { formatearCoordenada } from "@/lib/coordenadas";
-import { OpenWeatherError, pedirJson } from "@/lib/openWeatherHttp";
+import { ProveedorError, pedirJson } from "@/lib/proveedorHttp";
 import type { BusquedaValida, CoordenadasValidas } from "@/lib/validarBusqueda";
 import type { ClimaActual } from "@/types/clima";
 
@@ -66,7 +66,7 @@ function instanteOpcional(valor: unknown): number | null {
 async function pedirClima(url: URL): Promise<OpenWeatherRespuesta> {
   const datos = await pedirJson(url);
   if (!esRespuestaValida(datos)) {
-    throw new OpenWeatherError(
+    throw new ProveedorError(
       "RESPUESTA_INVALIDA",
       502,
       "El servicio del clima devolvió una respuesta inesperada.",

@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { MINIMO_CARACTERES } from "@/lib/geocoding";
 import { buscarSugerencias } from "@/lib/geocodingService";
-import { OpenWeatherError } from "@/lib/openWeatherHttp";
+import { ProveedorError } from "@/lib/proveedorHttp";
 import { validarBusqueda } from "@/lib/validarBusqueda";
 import type { CodigoError, ErrorApi } from "@/types/clima";
 import type { RespuestaGeocoding } from "@/types/geocoding";
@@ -37,7 +37,7 @@ export async function GET(
       { headers: { "Cache-Control": "public, max-age=3600, s-maxage=86400" } },
     );
   } catch (error) {
-    if (error instanceof OpenWeatherError) {
+    if (error instanceof ProveedorError) {
       return respuestaError(error.codigo, error.message, error.status);
     }
     console.error("Error inesperado al buscar sugerencias", error);

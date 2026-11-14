@@ -1,5 +1,5 @@
 import { normalizarGeocoding } from "@/lib/geocoding";
-import { pedirJson } from "@/lib/openWeatherHttp";
+import { pedirJson } from "@/lib/proveedorHttp";
 import type { BusquedaValida } from "@/lib/validarBusqueda";
 import type { Sugerencia } from "@/types/geocoding";
 
@@ -10,9 +10,10 @@ const RESULTADOS_PEDIDOS = 10;
 const REVALIDAR_SEGUNDOS = 86_400;
 
 /**
- * Hasta 5 lugares cuyo nombre empieza como lo escrito (con language=es, ya en
- * español), acotados al país si se indicó. Open-Meteo no pide API key y
- * busca por prefijo: «Córd» devuelve los Córdoba.
+ * Hasta 5 lugares que coinciden con lo escrito (con language=es, ya en español),
+ * acotados al país si se indicó. Open-Meteo no pide API key. Con 3 o más letras
+ * acepta coincidencias parciales («Córd» devuelve los Córdoba); con menos solo
+ * hay coincidencia exacta, por eso el autocompletado exige 3.
  */
 export async function buscarSugerencias({ ciudad, pais }: BusquedaValida): Promise<Sugerencia[]> {
   const url = new URL(URL_GEOCODING);

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { OpenWeatherError } from "@/lib/openWeatherHttp";
+import { ProveedorError } from "@/lib/proveedorHttp";
 import { obtenerClima } from "@/lib/openWeatherService";
 import { validarBusqueda, validarCoordenadas } from "@/lib/validarBusqueda";
 import type { CodigoError, ErrorApi, RespuestaClima } from "@/types/clima";
@@ -39,7 +39,7 @@ export async function GET(
     const clima = await obtenerClima(validacion.datos, apiKey);
     return NextResponse.json(clima);
   } catch (error) {
-    if (error instanceof OpenWeatherError) {
+    if (error instanceof ProveedorError) {
       if (error.codigo === "SERVICIO_NO_CONFIGURADO") {
         console.error("OpenWeather rechazó la API key (401)");
       }

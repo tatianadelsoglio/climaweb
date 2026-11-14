@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { obtenerPronostico } from "@/lib/openMeteoService";
-import { OpenWeatherError } from "@/lib/openWeatherHttp";
+import { ProveedorError } from "@/lib/proveedorHttp";
 import { validarCoordenadas } from "@/lib/validarBusqueda";
 import type { CodigoError, ErrorApi, RespuestaPronostico } from "@/types/clima";
 
@@ -29,7 +29,7 @@ export async function GET(
       { headers: { "Cache-Control": "public, max-age=300, s-maxage=900" } },
     );
   } catch (error) {
-    if (error instanceof OpenWeatherError) {
+    if (error instanceof ProveedorError) {
       return respuestaError(error.codigo, error.message, error.status);
     }
     console.error("Error inesperado al obtener el pronóstico", error);

@@ -2,40 +2,41 @@ import type { CodigoError } from "@/types/clima";
 
 const TIMEOUT_MS = 8000;
 
-export class OpenWeatherError extends Error {
+export class ProveedorError extends Error {
   constructor(
     readonly codigo: CodigoError,
     readonly status: number,
     mensaje: string,
   ) {
     super(mensaje);
-    this.name = "OpenWeatherError";
+    this.name = "ProveedorError";
   }
 }
 
-function errorDeEstado(status: number): OpenWeatherError {
+/** Estado HTTP del proveedor → error propio. El 401 solo lo manda OpenWeather (API key). */
+function errorDeEstado(status: number): ProveedorError {
   switch (status) {
     case 404:
-      return new OpenWeatherError(
+      return new ProveedorError(
         "CIUDAD_NO_ENCONTRADA",
         404,
         "No se encontró la ciudad indicada.",
       );
     case 401:
       // La API key es nuestra: para el cliente es un fallo del servidor, no de autenticación.
-      return new OpenWeatherError(
+      return new ProveedorError(
         "SERVICIO_NO_CONFIGURADO",
         502,
         "El servicio del clima no está configurado correctamente.",
       );
     case 429:
-      return new OpenWeatherError(
+      return new ProveedorError(
         "LIMITE_DE_CONSULTAS",
         429,
         "Se superó el límite de consultas. Probá de nuevo en unos minutos.",
       );
     default:
-      return new OpenWeatherError(
+      return new ProveedorError(
         "SERVICIO_NO_DISPONIBLE",
         502,
         "El servicio del clima no está disponible por el momento.",
@@ -43,7 +44,7 @@ function errorDeEstado(status: number): OpenWeatherError {
   }
 }
 
-/** GET a OpenWeather con timeout; devuelve el JSON o lanza OpenWeatherError. */
+/** GET a un proveedor externo (OpenWeather, Open-Meteo) con timeout; devuelve el JSON o lanza ProveedorError. */
 export async function pedirJson(
   url: URL,
   opciones: Pick<RequestInit, "cache"> & { next?: { revalidate: number } } = {
@@ -58,13 +59,13 @@ export async function pedirJson(
     });
   } catch (error) {
     if (error instanceof DOMException && error.name === "TimeoutError") {
-      throw new OpenWeatherError(
+      throw new ProveedorError(
         "SERVICIO_NO_DISPONIBLE",
         504,
         "El servicio del clima tardó demasiado en responder.",
       );
     }
-    throw new OpenWeatherError(
+    throw new ProveedorError(
       "SERVICIO_NO_DISPONIBLE",
       502,
       "No se pudo conectar con el servicio del clima.",
@@ -78,7 +79,7 @@ export async function pedirJson(
   try {
     return await respuesta.json();
   } catch {
-    throw new OpenWeatherError(
+    throw new ProveedorError(
       "RESPUESTA_INVALIDA",
       502,
       "El servicio del clima devolvió una respuesta inesperada.",

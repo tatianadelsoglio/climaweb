@@ -1,5 +1,5 @@
 import { formatearCoordenada } from "@/lib/coordenadas";
-import { OpenWeatherError, pedirJson } from "@/lib/openWeatherHttp";
+import { ProveedorError, pedirJson } from "@/lib/proveedorHttp";
 import { normalizarPronostico } from "@/lib/openMeteo";
 import type { CoordenadasValidas } from "@/lib/validarBusqueda";
 import type { DiaPronostico } from "@/types/clima";
@@ -24,7 +24,7 @@ export async function obtenerPronostico({ lat, lon }: CoordenadasValidas): Promi
     await pedirJson(url, { next: { revalidate: REVALIDAR_SEGUNDOS } }),
   );
   if (dias.length === 0) {
-    throw new OpenWeatherError(
+    throw new ProveedorError(
       "RESPUESTA_INVALIDA",
       502,
       "El servicio del pronóstico devolvió una respuesta inesperada.",
