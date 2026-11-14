@@ -13,7 +13,7 @@ const NOCHE_CORDOBA = Date.UTC(2026, 10, 15, 1, 30) / 1000; // 22:30 local
 
 function datos(codigo: number, momento: number, extra: Partial<typeof CORDOBA> = {}) {
   return {
-    condicion: { codigo, descripcion: "" },
+    condicion: { codigo },
     momento,
     ...CORDOBA,
     ...extra,

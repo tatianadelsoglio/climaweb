@@ -28,7 +28,7 @@ interface OpenWeatherRespuesta {
     humidity: number;
   };
   wind: { speed: number; deg?: unknown };
-  weather: [{ id: number; description: string }, ...unknown[]];
+  weather: [{ id: number }, ...unknown[]];
 }
 
 function esNumero(valor: unknown): valor is number {
@@ -42,11 +42,7 @@ function esObjeto(valor: unknown): valor is Record<string, unknown> {
 function esCondicionValida(valor: unknown): boolean {
   if (!Array.isArray(valor) || valor.length === 0) return false;
   const [condicion]: unknown[] = valor;
-  return (
-    esObjeto(condicion) &&
-    esNumero(condicion.id) &&
-    typeof condicion.description === "string"
-  );
+  return esObjeto(condicion) && esNumero(condicion.id);
 }
 
 function esRespuestaValida(datos: unknown): datos is OpenWeatherRespuesta {
@@ -170,7 +166,7 @@ export async function obtenerClima(
       velocidad: datos.wind.speed * MS_A_KMH,
       direccion: esNumero(datos.wind.deg) ? datos.wind.deg : null,
     },
-    condicion: { codigo: condicion.id, descripcion: condicion.description },
+    condicion: { codigo: condicion.id },
     amanecer: instanteOpcional(datos.sys.sunrise),
     atardecer: instanteOpcional(datos.sys.sunset),
     zonaHoraria: datos.timezone,

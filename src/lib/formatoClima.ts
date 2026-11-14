@@ -70,11 +70,6 @@ export function formatearHumedad(porcentaje: number): string {
   return `${Math.round(porcentaje)} %`;
 }
 
-/** "algo de nubes" → "Algo de nubes". */
-export function formatearDescripcion(descripcion: string): string {
-  return capitalizar(descripcion.trim());
-}
-
 /** "AR" → "Argentina"; si Intl no lo conoce, devuelve el código. */
 export function nombrePais(codigo: string): string {
   try {

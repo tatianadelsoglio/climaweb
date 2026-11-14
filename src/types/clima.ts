@@ -16,7 +16,6 @@ export interface ClimaActual {
   condicion: {
     /** Código de condición de OpenWeather (2xx, 3xx, 5xx, 6xx, 7xx, 800, 80x). */
     codigo: number;
-    descripcion: string;
   };
   /** null cuando no hay amanecer/atardecer (día o noche polar). */
   amanecer: number | null;

@@ -2,8 +2,8 @@ import { ArrowDown, ArrowUp, MapPin, type LucideIcon } from "lucide-react";
 import IconoCondicion from "@/components/IconoCondicion";
 import PanelDatos from "@/components/PanelDatos";
 import PanelPronostico from "@/components/PanelPronostico";
+import { descripcionCondicion } from "@/lib/condiciones";
 import {
-  formatearDescripcion,
   formatearFechaLocal,
   formatearHoraLocal,
   formatearTemperatura,
@@ -76,7 +76,7 @@ export default function PantallaResultado({ clima, cielo }: PantallaResultadoPro
               />
             </div>
             <p className="font-display text-title-lg font-semibold tracking-[-0.6px] lg:text-heading lg:tracking-[-1px]">
-              {formatearDescripcion(clima.condicion.descripcion)}
+              {descripcionCondicion(clima.condicion.codigo)}
             </p>
             <div className="flex flex-wrap items-center gap-x-inset pt-sm text-body lg:gap-x-xl lg:pt-lg lg:text-lead">
               <p className="text-fg-muted">

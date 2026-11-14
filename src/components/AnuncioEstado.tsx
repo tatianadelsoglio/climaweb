@@ -1,9 +1,6 @@
 import type { EstadoClima } from "@/hooks/useClima";
-import {
-  formatearDescripcion,
-  formatearTemperatura,
-  nombrePais,
-} from "@/lib/formatoClima";
+import { descripcionCondicion } from "@/lib/condiciones";
+import { formatearTemperatura, nombrePais } from "@/lib/formatoClima";
 
 interface AnuncioEstadoProps {
   resultado: EstadoClima;
@@ -17,7 +14,7 @@ function textoAnuncio(resultado: EstadoClima): string {
       return `Buscando el clima de ${resultado.consulta}…`;
     case "exito": {
       const { clima } = resultado;
-      return `${clima.ciudad}, ${nombrePais(clima.pais)}: ${formatearTemperatura(clima.temperatura)}, ${formatearDescripcion(clima.condicion.descripcion)}.`;
+      return `${clima.ciudad}, ${nombrePais(clima.pais)}: ${formatearTemperatura(clima.temperatura)}, ${descripcionCondicion(clima.condicion.codigo)}.`;
     }
     case "error":
       return resultado.mensaje;

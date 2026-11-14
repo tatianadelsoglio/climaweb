@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
-  formatearDescripcion,
   formatearFechaLocal,
   formatearHoraLocal,
   formatearHumedad,
@@ -60,12 +59,6 @@ describe("viento y humedad", () => {
 
   it("formatea la humedad", () => {
     assert.equal(formatearHumedad(58), "58 %");
-  });
-});
-
-describe("formatearDescripcion", () => {
-  it("pone en mayúscula la primera letra", () => {
-    assert.equal(formatearDescripcion("algo de nubes"), "Algo de nubes");
   });
 });
 

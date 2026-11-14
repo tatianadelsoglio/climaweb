@@ -61,7 +61,6 @@ function esClimaActual(datos: unknown): datos is ClimaActual {
     esNumero(datos.viento.velocidad) &&
     esNumeroONulo(datos.viento.direccion) &&
     esNumero(datos.condicion.codigo) &&
-    typeof datos.condicion.descripcion === "string" &&
     esNumeroONulo(datos.amanecer) &&
     esNumeroONulo(datos.atardecer) &&
     esNumero(datos.zonaHoraria) &&
