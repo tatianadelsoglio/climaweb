@@ -11,6 +11,24 @@ export type EstadoClima =
 
 const MENSAJE_RED = "No se pudo conectar. Revisá tu conexión e intentá de nuevo.";
 
+const MENSAJE_INESPERADO = "El servicio del clima no está disponible por el momento.";
+
+function esClimaActual(datos: unknown): datos is ClimaActual {
+  if (typeof datos !== "object" || datos === null) return false;
+  return (
+    "ciudad" in datos &&
+    typeof datos.ciudad === "string" &&
+    "pais" in datos &&
+    typeof datos.pais === "string" &&
+    "temperatura" in datos &&
+    typeof datos.temperatura === "number" &&
+    "temperaturaMaxima" in datos &&
+    typeof datos.temperaturaMaxima === "number" &&
+    "temperaturaMinima" in datos &&
+    typeof datos.temperaturaMinima === "number"
+  );
+}
+
 function esErrorApi(datos: unknown): datos is ErrorApi {
   if (typeof datos !== "object" || datos === null || !("error" in datos)) {
     return false;
@@ -42,16 +60,21 @@ export function useClima() {
       const respuesta = await fetch(`/api/weather?${params.toString()}`, {
         signal: controlador.signal,
       });
-      const datos: unknown = await respuesta.json();
+      const datos: unknown = await respuesta.json().catch(() => null);
+      if (controlador.signal.aborted) return;
 
       if (!respuesta.ok) {
         setResultado({
           estado: "error",
-          mensaje: esErrorApi(datos) ? datos.error.mensaje : MENSAJE_RED,
+          mensaje: esErrorApi(datos) ? datos.error.mensaje : MENSAJE_INESPERADO,
         });
         return;
       }
-      setResultado({ estado: "exito", clima: datos as ClimaActual });
+      if (!esClimaActual(datos)) {
+        setResultado({ estado: "error", mensaje: MENSAJE_INESPERADO });
+        return;
+      }
+      setResultado({ estado: "exito", clima: datos });
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       setResultado({ estado: "error", mensaje: MENSAJE_RED });

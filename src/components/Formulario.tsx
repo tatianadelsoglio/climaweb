@@ -47,7 +47,7 @@ export default function Formulario({ cargando, onBuscar }: FormularioProps) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      {error && <MensajeError mensaje="Ambos campos son obligatorios" />}
+      {error && <div id="error-formulario"><MensajeError mensaje="Ambos campos son obligatorios" /></div>}
 
       <div className="flex flex-col gap-1">
         <label htmlFor="ciudad" className="text-white">
@@ -57,6 +57,9 @@ export default function Formulario({ cargando, onBuscar }: FormularioProps) {
           type="text"
           id="ciudad"
           name="ciudad"
+          required
+          aria-invalid={error}
+          aria-describedby={error ? "error-formulario" : undefined}
           value={ciudad}
           onChange={handleCiudad}
           maxLength={100}
@@ -72,6 +75,9 @@ export default function Formulario({ cargando, onBuscar }: FormularioProps) {
         <select
           id="pais"
           name="pais"
+          required
+          aria-invalid={error}
+          aria-describedby={error ? "error-formulario" : undefined}
           value={pais}
           onChange={handlePais}
           className={`${CLASE_CAMPO} [&>option]:text-slate-900`}

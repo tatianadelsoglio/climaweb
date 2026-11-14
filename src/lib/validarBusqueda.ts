@@ -5,7 +5,7 @@ export interface BusquedaValida {
 
 const CIUDAD_MAX = 100;
 // Letras (con acentos), espacios, apóstrofes, puntos y guiones.
-const CIUDAD_REGEX = /^[\p{L}][\p{L}\s'.-]*$/u;
+const CIUDAD_REGEX = /^[\p{L}][\p{L}' .-]*$/u;
 const PAIS_REGEX = /^[A-Za-z]{2}$/;
 
 /** Devuelve la búsqueda normalizada o un mensaje de error. */
