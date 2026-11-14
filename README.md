@@ -82,9 +82,12 @@ flowchart LR
 
 ### Proceso de diseño
 
-Antes de escribir código exploré dos direcciones visuales en [pen.dev](https://pen.dev) (archivo [`design/climaweb.pen`](design/climaweb.pen)). Elegí la dirección **«Atmósfera»**: un cielo de fondo que comunica la condición y la hora de un vistazo, paneles de vidrio, tipografía grande y una paleta con contraste verificado para texto y vidrio sobre cada cielo. De ahí salieron los tokens que usa Tailwind y los 8 cielos.
+Antes de escribir código exploré dos direcciones visuales en [pen.dev](https://pen.dev) (archivo [`design/climaweb.pen`](design/climaweb.pen)):
 
-<!-- TODO(Tatiana): describir la otra dirección explorada y por qué se descartó. -->
+- **A, «Papel»** (minimalista editorial): transmitía calma y precisión, como un buen diario. La temperatura en Geist a 176 px, líneas finas y un tinte suave en una esquina, cálido de día y azul de noche. Ventajas: no sumaba dependencias, tenía contraste AA con margen y era la más simple de implementar.
+- **B, «Atmósfera»**: un cielo de fondo que comunica la condición y la hora de un vistazo, paneles de vidrio, tipografía grande y una paleta con contraste verificado para texto y vidrio sobre cada cielo.
+
+**Por qué elegí B.** «Papel» era menos memorable para un portfolio, y la atmósfera del clima dependía casi solo de los íconos. «Atmósfera» hace del cielo de la ciudad el centro de la experiencia, a costa de más trabajo: 2 fuentes nuevas, `backdrop-blur` con respaldo sólido y verificación AA de cada cielo. De ahí salieron los tokens que usa Tailwind y los 8 cielos.
 
 ### Antes y después
 
@@ -237,9 +240,12 @@ flowchart LR
 
 ### Design process
 
-Before writing code I explored two visual directions in [pen.dev](https://pen.dev) (file [`design/climaweb.pen`](design/climaweb.pen)). I chose the **"Atmósfera"** direction: a background sky that conveys condition and time at a glance, glass panels, large type and a palette with verified contrast for text and glass over every sky. The Tailwind tokens and the 8 skies come from it.
+Before writing code I explored two visual directions in [pen.dev](https://pen.dev) (file [`design/climaweb.pen`](design/climaweb.pen)):
 
-<!-- TODO(Tatiana): describe the other direction explored and why it was discarded. -->
+- **A, "Papel"** (editorial minimalism): it conveyed calm and precision, like a good newspaper. The temperature in Geist at 176 px, thin lines and a soft tint in one corner, warm by day and blue by night. Upsides: no added dependencies, AA contrast with room to spare, and the simplest to implement.
+- **B, "Atmósfera"**: a background sky that conveys condition and time at a glance, glass panels, large type and a palette with verified contrast for text and glass over every sky.
+
+**Why I chose B.** "Papel" was less memorable for a portfolio, and the feel of the weather depended almost only on the icons. "Atmósfera" makes the city's sky the center of the experience, at the cost of more work: 2 new fonts, `backdrop-blur` with a solid fallback, and AA verification of every sky. The Tailwind tokens and the 8 skies come from it.
 
 ### Before and after
 
