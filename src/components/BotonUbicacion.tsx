@@ -8,9 +8,8 @@ interface BotonUbicacionProps {
 }
 
 const ETIQUETA = "Usar mi ubicación";
-export const MENSAJE_SIN_SOPORTE = "Tu navegador no permite usar la ubicación. Buscá tu ciudad.";
-/** Id del aviso visible que explica por qué el botón está deshabilitado. */
-export const ID_AVISO_SIN_SOPORTE = "aviso-sin-ubicacion";
+/** Corto a propósito: en la pantalla inicial entra en una línea bajo el botón. */
+export const MENSAJE_SIN_SOPORTE = "Tu navegador no permite usar la ubicación.";
 
 const CLASES: Record<BotonUbicacionProps["variante"], { boton: string; icono: string; etiqueta: string }> = {
   encabezado: {
@@ -45,11 +44,12 @@ export default function BotonUbicacion({ variante, estado, onUbicar }: BotonUbic
       onClick={onUbicar}
       disabled={buscando || sinSoporte}
       aria-busy={buscando}
-      aria-describedby={sinSoporte ? ID_AVISO_SIN_SOPORTE : undefined}
+      title={sinSoporte ? MENSAJE_SIN_SOPORTE : undefined}
       className={`${clases.boton} ${buscando ? "cursor-wait" : ""} ${sinSoporte ? "cursor-not-allowed opacity-50" : ""}`}
     >
       <Icono aria-hidden className={`${clases.icono} ${buscando ? "animate-spin" : ""}`} />
       <span className={clases.etiqueta}>{ETIQUETA}</span>
+      {sinSoporte && <span className="sr-only"> (no disponible en este navegador)</span>}
     </button>
   );
 }
