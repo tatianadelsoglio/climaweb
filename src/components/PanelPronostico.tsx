@@ -110,9 +110,9 @@ export default function PanelPronostico({ pronostico, unidad }: PanelPronosticoP
       >
         Próximos 7 días
       </h2>
-      {/* Región viva siempre presente: anuncia la carga y el error del panel. */}
+      {/* Región viva solo para el error: vacía mientras carga (el clima ya se anuncia aparte
+          y no conviene que compitan) y siempre presente, así el cambio a texto se anuncia. */}
       <p role="status" className="sr-only">
-        {pronostico.estado === "cargando" && "Cargando el pronóstico de los próximos días…"}
         {pronostico.estado === "error" && MENSAJE_ERROR}
       </p>
       <div
