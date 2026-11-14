@@ -14,7 +14,7 @@ import { useAutocompletado } from "@/hooks/useAutocompletado";
 import { useConsultaInicial } from "@/hooks/useConsultaInicial";
 import { useCieloDocumento } from "@/hooks/useCieloDocumento";
 import { useClima } from "@/hooks/useClima";
-import { useFocoEnContenido } from "@/hooks/useFocoEnContenido";
+import { useFocoEnContenido, type EstadoFoco } from "@/hooks/useFocoEnContenido";
 import { useGeolocalizacion } from "@/hooks/useGeolocalizacion";
 import { useSugerencias } from "@/hooks/useSugerencias";
 import { usePronostico } from "@/hooks/usePronostico";
@@ -44,9 +44,13 @@ export default function AppClima() {
   const [textoEditado, setTexto] = useState<string | null>(null);
   const texto = textoEditado ?? (consultaInicial ? textoDeConsulta(consultaInicial) : "");
   const [errorCampo, setErrorCampo] = useState<string | null>(null);
-  // true si la última búsqueda lleva el foco al título del resultado: el anuncio en voz
-  // alta se resume para no repetir lo que el título ya dice.
-  const [focoEnTitulo, setFocoEnTitulo] = useState(false);
+  // Qué pasó con el foco en la última búsqueda (ver EstadoFoco): el anuncio en voz alta
+  // se resume SOLO si el foco realmente llegó al título del resultado.
+  const [foco, setFoco] = useState<EstadoFoco>(null);
+  const alResolverFoco = useCallback(
+    (enTitulo: boolean) => setFoco(enTitulo ? "titulo" : "omitido"),
+    [],
+  );
   // Sugerencia elegida y el texto que dejó en el campo: si se vuelve a buscar con
   // ese mismo texto (que no es una búsqueda válida por sí solo) se usa la elegida.
   const seleccionRef = useRef<{ texto: string; consulta: ConsultaCoordenadas } | null>(null);
@@ -56,6 +60,7 @@ export default function AppClima() {
   const { contenedorRef, llevarFocoAlContenido } = useFocoEnContenido(
     resultado.estado,
     resultado.estado === "exito" || resultado.estado === "error",
+    alResolverFoco,
   );
 
   // Si la persona sigue en el mismo elemento cuando llega la ubicación, el foco pasa al
@@ -64,7 +69,7 @@ export default function AppClima() {
   const alObtenerUbicacion = useCallback(
     ({ lat, lon }: CoordenadasValidas) => {
       const mueveFoco = document.activeElement === origenDelFocoRef.current;
-      setFocoEnTitulo(mueveFoco);
+      setFoco(mueveFoco ? "esperando" : null);
       if (mueveFoco) llevarFocoAlContenido();
       setTexto("");
       seleccionRef.current = null;
@@ -111,7 +116,7 @@ export default function AppClima() {
     const seleccion = seleccionRef.current;
     if (seleccion && seleccion.texto === texto) {
       setErrorCampo(null);
-      setFocoEnTitulo(false);
+      setFoco(null);
       void buscar(seleccion.consulta);
       return;
     }
@@ -121,14 +126,14 @@ export default function AppClima() {
       return;
     }
     setErrorCampo(null);
-    setFocoEnTitulo(false);
+    setFoco(null);
     void buscar(busqueda.datos);
   }
 
   function elegirCiudad({ nombre, busqueda }: CiudadSugerida) {
     ubicacion.cancelar();
     cambiarTexto(nombre);
-    setFocoEnTitulo(true);
+    setFoco("esperando");
     llevarFocoAlContenido();
     void buscar({ ...busqueda, nombre });
   }
@@ -140,13 +145,13 @@ export default function AppClima() {
     ubicacion.cancelar();
     cambiarTexto(textoElegido);
     autocompletado.cerrar();
-    setFocoEnTitulo(true);
+    setFoco("esperando");
     llevarFocoAlContenido();
     void buscar(consulta);
   }
 
   function reintentarBusqueda() {
-    setFocoEnTitulo(true);
+    setFoco("esperando");
     llevarFocoAlContenido();
     reintentar();
   }
@@ -222,7 +227,7 @@ export default function AppClima() {
         resultado={resultado}
         unidad={unidad}
         estadoUbicacion={ubicacion.estado}
-        resumido={focoEnTitulo}
+        foco={foco}
       />
     </div>
   );

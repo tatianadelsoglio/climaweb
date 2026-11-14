@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { EstadoClima } from "@/hooks/useClima";
+import type { EstadoFoco } from "@/hooks/useFocoEnContenido";
 import type { EstadoUbicacion } from "@/hooks/useGeolocalizacion";
 import { descripcionCondicion } from "@/lib/condiciones";
 import { formatearTemperatura, nombrePais } from "@/lib/formatoClima";
@@ -10,20 +11,29 @@ interface AnuncioEstadoProps {
   unidad: Unidad;
   estadoUbicacion: EstadoUbicacion;
   /**
-   * El foco ya se lleva al título (h1) del resultado, y el lector lo lee solo:
-   * se anuncia únicamente lo que el título no dice, para no repetirlo.
+   * Qué pasó con el foco en esta búsqueda. Con el foco en el título (h1) del
+   * resultado, el lector lo lee solo y se anuncia únicamente lo que el título no dice.
    */
-  resumido: boolean;
+  foco: EstadoFoco;
 }
 
-/** Qué anunciar para este estado. Ver `AnuncioEstadoProps.resumido`. */
+/**
+ * Qué anunciar para este estado. Ver `AnuncioEstadoProps.foco`.
+ *
+ * Si el foco va a ir al título pero todavía no llegó ("esperando"), el resultado final
+ * no se anuncia todavía: se anuncia cuando se sabe dónde quedó el foco, para no decir
+ * la ciudad dos veces ni dejar en silencio a quien movió el foco durante la carga.
+ */
 export function textoAnuncio(
   resultado: EstadoClima,
   unidad: Unidad,
   estadoUbicacion: EstadoUbicacion,
-  resumido: boolean,
+  foco: EstadoFoco,
 ): string {
   if (estadoUbicacion === "buscando") return "Buscando tu ubicación…";
+  const resumido = foco === "titulo";
+  const final = resultado.estado === "exito" || resultado.estado === "error";
+  if (final && foco === "esperando") return "";
 
   switch (resultado.estado) {
     case "inicial":
@@ -53,17 +63,25 @@ export default function AnuncioEstado({
   resultado,
   unidad,
   estadoUbicacion,
-  resumido,
+  foco,
 }: AnuncioEstadoProps) {
   const buscandoUbicacion = estadoUbicacion === "buscando";
-  const [previo, setPrevio] = useState<{ resultado: EstadoClima; buscando: boolean } | null>(null);
+  const [previo, setPrevio] = useState<{
+    resultado: EstadoClima;
+    buscando: boolean;
+    foco: EstadoFoco;
+  } | null>(null);
   const [texto, setTexto] = useState("");
 
   // Ajuste de estado durante el render (patrón de React): se recalcula solo si cambió
-  // el estado de la búsqueda o de la ubicación, no la unidad.
-  if (previo?.resultado !== resultado || previo?.buscando !== buscandoUbicacion) {
-    setPrevio({ resultado, buscando: buscandoUbicacion });
-    setTexto(textoAnuncio(resultado, unidad, estadoUbicacion, resumido));
+  // el estado de la búsqueda, de la ubicación o del foco, no la unidad.
+  if (
+    previo?.resultado !== resultado ||
+    previo?.buscando !== buscandoUbicacion ||
+    previo?.foco !== foco
+  ) {
+    setPrevio({ resultado, buscando: buscandoUbicacion, foco });
+    setTexto(textoAnuncio(resultado, unidad, estadoUbicacion, foco));
   }
 
   return (
