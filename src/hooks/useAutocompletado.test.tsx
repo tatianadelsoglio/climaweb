@@ -107,6 +107,16 @@ describe("useSugerencias · debounce, mínimo y cancelación", () => {
     expect(pendientes[0].url).toBe("/api/geocode?ciudad=nueva+york&pais=US");
   });
 
+  it("el país va en mayúsculas: «ar» y «AR» piden la misma URL (misma clave de caché del CDN)", async () => {
+    const { pendientes } = fetchControlable();
+    renderHook(() => useSugerencias({ ciudad: "Córdoba", pais: "ar" }));
+    renderHook(() => useSugerencias({ ciudad: "Córdoba", pais: "AR" }));
+    await avanzar(300);
+    expect(pendientes).toHaveLength(2);
+    expect(pendientes[0].url).toBe(pendientes[1].url);
+    expect(pendientes[0].url).toContain("pais=AR");
+  });
+
   it("una respuesta que llega tarde de un texto anterior no se muestra", async () => {
     const { pendientes } = fetchControlable({ respetarAbort: false });
     const { result, rerender } = renderHook(({ ciudad }) => useSugerencias({ ciudad }), {

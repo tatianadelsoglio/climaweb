@@ -36,7 +36,8 @@ function parametrosDe(consulta: ConsultaClima): URLSearchParams {
   }
   // Texto normalizado: consultas equivalentes comparten URL y, con ella, la caché del CDN.
   const params = new URLSearchParams({ ciudad: normalizarTexto(consulta.ciudad) });
-  if (consulta.pais) params.set("pais", consulta.pais);
+  // En mayúsculas: «ar» y «AR» tienen que ser la misma URL (y la misma clave de caché).
+  if (consulta.pais) params.set("pais", consulta.pais.toUpperCase());
   return params;
 }
 

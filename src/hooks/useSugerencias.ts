@@ -53,7 +53,8 @@ export function useSugerencias(
 ): { sugerencias: Sugerencia[]; cargando: boolean } {
   // Normalizado: «Córd» y « córd » comparten URL y, con ella, la caché del CDN.
   const ciudad = normalizarTexto(busqueda?.ciudad ?? "");
-  const pais = busqueda?.pais ?? "";
+  // En mayúsculas: «ar» y «AR» tienen que ser la misma URL (y la misma clave de caché).
+  const pais = (busqueda?.pais ?? "").toUpperCase();
   const clave = busqueda && ciudad.length >= MINIMO_CARACTERES ? `${ciudad}|${pais}` : null;
 
   const [respuesta, setRespuesta] = useState<{ clave: string; sugerencias: Sugerencia[] } | null>(

@@ -77,6 +77,19 @@ describe("useClima · flujo básico", () => {
     expect(pendientes[1].url).toBe("/api/weather?lat=-31.42&lon=-64.18");
   });
 
+  it("el país va en mayúsculas: «ar» y «AR» son la misma URL (misma clave de caché del CDN)", () => {
+    const { pendientes } = fetchControlable();
+    const { result } = renderHook(() => useClima());
+    act(() => {
+      void result.current.buscar({ ciudad: "Córdoba", pais: "ar" });
+    });
+    act(() => {
+      void result.current.buscar({ ciudad: "Córdoba", pais: "AR" });
+    });
+    expect(pendientes[0].url).toBe(pendientes[1].url);
+    expect(pendientes[0].url).toContain("pais=AR");
+  });
+
   it("momento pasa a ser la hora de este dispositivo (la respuesta pudo venir del CDN)", async () => {
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date("2026-11-14T18:00:00Z"));
