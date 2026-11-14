@@ -1,3 +1,13 @@
+import BuscadorClima from "@/components/BuscadorClima";
+import Encabezado from "@/components/Encabezado";
+
 export default function Home() {
-  return <main className="p-6 text-white">Clima</main>;
+  return (
+    <>
+      <Encabezado titulo="Clima" />
+      <main className="flex-1">
+        <BuscadorClima />
+      </main>
+    </>
+  );
 }
