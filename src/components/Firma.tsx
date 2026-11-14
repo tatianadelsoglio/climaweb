@@ -47,9 +47,9 @@ export default function Firma() {
           <Image
             src={ICONO}
             alt=""
-            width={20}
-            height={18}
-            className="h-[18px] w-5 shrink-0 opacity-70"
+            width={361}
+            height={316}
+            className="h-auto w-5 shrink-0 opacity-70"
           />
         </span>
       </p>
