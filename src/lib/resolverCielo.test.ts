@@ -1,0 +1,106 @@
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+import { esDeDia, resolverCielo } from "./resolverCielo.ts";
+
+// Córdoba, Argentina (UTC−3), 14/11/2026: amanecer 06:12 y atardecer 19:58 locales.
+const CORDOBA = {
+  zonaHoraria: -3 * 3600,
+  amanecer: Date.UTC(2026, 10, 14, 9, 12) / 1000,
+  atardecer: Date.UTC(2026, 10, 14, 22, 58) / 1000,
+};
+const MEDIODIA_CORDOBA = Date.UTC(2026, 10, 14, 15, 42) / 1000; // 12:42 local
+const NOCHE_CORDOBA = Date.UTC(2026, 10, 15, 1, 30) / 1000; // 22:30 local
+
+function datos(codigo: number, momento: number, extra: Partial<typeof CORDOBA> = {}) {
+  return {
+    condicion: { codigo, descripcion: "" },
+    momento,
+    ...CORDOBA,
+    ...extra,
+  };
+}
+
+describe("resolverCielo", () => {
+  it("800 → clear de día y de noche", () => {
+    assert.equal(resolverCielo(datos(800, MEDIODIA_CORDOBA)), "clear-day");
+    assert.equal(resolverCielo(datos(800, NOCHE_CORDOBA)), "clear-night");
+  });
+
+  it("801 a 804 → clouds de día y de noche", () => {
+    for (const codigo of [801, 802, 803, 804]) {
+      assert.equal(resolverCielo(datos(codigo, MEDIODIA_CORDOBA)), "clouds-day");
+      assert.equal(resolverCielo(datos(codigo, NOCHE_CORDOBA)), "clouds-night");
+    }
+  });
+
+  it("2xx → storm, 3xx y 5xx → rain, 6xx → snow, 7xx → mist (sin variante de noche)", () => {
+    const casos = [
+      [200, "storm"],
+      [232, "storm"],
+      [300, "rain"],
+      [321, "rain"],
+      [500, "rain"],
+      [531, "rain"],
+      [600, "snow"],
+      [622, "snow"],
+      [701, "mist"],
+      [781, "mist"],
+    ] as const;
+    for (const [codigo, cielo] of casos) {
+      assert.equal(resolverCielo(datos(codigo, MEDIODIA_CORDOBA)), cielo);
+      assert.equal(resolverCielo(datos(codigo, NOCHE_CORDOBA)), cielo);
+    }
+  });
+
+  it("un código desconocido cae en clear", () => {
+    assert.equal(resolverCielo(datos(999, MEDIODIA_CORDOBA)), "clear-day");
+  });
+});
+
+describe("esDeDia", () => {
+  it("usa los límites exactos: amanecer incluido, atardecer excluido", () => {
+    assert.equal(esDeDia(datos(800, CORDOBA.amanecer - 1)), false);
+    assert.equal(esDeDia(datos(800, CORDOBA.amanecer)), true);
+    assert.equal(esDeDia(datos(800, CORDOBA.atardecer - 1)), true);
+    assert.equal(esDeDia(datos(800, CORDOBA.atardecer)), false);
+  });
+
+  it("usa el huso de la ciudad, no el del usuario", () => {
+    // Tokio (UTC+9): 03:00 UTC son las 12:00 locales.
+    const tokio = {
+      zonaHoraria: 9 * 3600,
+      amanecer: Date.UTC(2026, 10, 13, 21, 14) / 1000, // 06:14 local
+      atardecer: Date.UTC(2026, 10, 14, 7, 35) / 1000, // 16:35 local
+    };
+    const mediodiaTokio = Date.UTC(2026, 10, 14, 3, 0) / 1000;
+    assert.equal(esDeDia({ ...tokio, momento: mediodiaTokio }), true);
+    // Ese mismo instante es de noche en Córdoba (00:00 local).
+    assert.equal(esDeDia(datos(800, mediodiaTokio)), false);
+  });
+
+  it("compara horas locales aunque el amanecer informado sea de otra fecha", () => {
+    // Amanecer del día siguiente: sigue siendo de día a las 12:42.
+    const amanecerManiana = CORDOBA.amanecer + 86_400;
+    assert.equal(
+      esDeDia(datos(800, MEDIODIA_CORDOBA, { amanecer: amanecerManiana })),
+      true,
+    );
+  });
+
+  it("sin amanecer ni atardecer (polar) usa la hora local de la ciudad", () => {
+    const polar = { amanecer: null, atardecer: null, zonaHoraria: 0 };
+    assert.equal(esDeDia({ ...polar, momento: Date.UTC(2026, 5, 21, 12) / 1000 }), true);
+    assert.equal(esDeDia({ ...polar, momento: Date.UTC(2026, 5, 21, 23) / 1000 }), false);
+  });
+
+  it("husos con media hora y desplazamientos que cruzan la medianoche", () => {
+    // India (UTC+5:30): 18:30 UTC del 13/11 son las 00:00 del 14/11 local.
+    const india = {
+      zonaHoraria: 5.5 * 3600,
+      amanecer: Date.UTC(2026, 10, 14, 0, 50) / 1000, // 06:20 local
+      atardecer: Date.UTC(2026, 10, 14, 12, 10) / 1000, // 17:40 local
+    };
+    assert.equal(esDeDia({ ...india, momento: Date.UTC(2026, 10, 13, 18, 30) / 1000 }), false);
+    assert.equal(esDeDia({ ...india, momento: Date.UTC(2026, 10, 14, 6, 0) / 1000 }), true);
+  });
+});

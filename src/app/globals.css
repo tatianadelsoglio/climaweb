@@ -83,6 +83,100 @@
   --color-accent: #A8DCEC;
 }
 
+/*
+ * Cielos derivados de la paleta del .pen. Verificados con WCAG 2.1 AA en el
+ * peor punto del degradado (sin glow): blanco ≥ 8.6:1 sobre el cielo y ≥ 6.5:1
+ * sobre vidrio; texto atenuado ≥ 4.78:1 sobre vidrio fuerte; acento y danger
+ * ≥ 5.1:1 sobre el cielo; on-accent sobre acento ≥ 11.7:1.
+ */
+[data-sky="clouds-day"] {
+  --color-sky-top: #1D3A61;
+  --color-sky-bottom: #2D4D72;
+  --color-sky-glow: #FFD59A33;
+  --color-accent: #FFD08A;
+}
+
+[data-sky="clouds-night"] {
+  --color-sky-top: #0E1426;
+  --color-sky-bottom: #262F4D;
+  --color-sky-glow: #9AA6D433;
+  --color-accent: #C7CEFF;
+}
+
+[data-sky="storm"] {
+  --color-sky-top: #161A2B;
+  --color-sky-bottom: #2C3148;
+  --color-sky-glow: #B7A4FF38;
+  --color-accent: #D9CCFF;
+}
+
+[data-sky="snow"] {
+  --color-sky-top: #1F3553;
+  --color-sky-bottom: #304C6B;
+  --color-sky-glow: #E6F1FF33;
+  --color-accent: #DDEBFF;
+}
+
+[data-sky="mist"] {
+  --color-sky-top: #242F39;
+  --color-sky-bottom: #38454F;
+  --color-sky-glow: #D9E2E833;
+  --color-accent: #D3DEE6;
+}
+
+/* Registrados como <color> para que el degradado se interpole al cambiar de cielo. */
+@property --color-sky-top {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #173F86;
+}
+
+@property --color-sky-bottom {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #2858A3;
+}
+
+@property --color-sky-glow {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #FFB86B47;
+}
+
+@property --color-accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #FFC56B;
+}
+
+[data-sky] {
+  transition-property: --color-sky-top, --color-sky-bottom, --color-sky-glow, --color-accent;
+  transition-duration: 1200ms;
+  transition-timing-function: ease-in-out;
+}
+
+/* Fondo de cielo: degradado vertical y glow radial (posiciones del .pen). */
+@utility bg-cielo {
+  background-image:
+    radial-gradient(80% 40% at 90% 4%, var(--color-sky-glow), #FFFFFF00),
+    linear-gradient(to bottom, var(--color-sky-top), var(--color-sky-bottom));
+
+  @variant lg {
+    background-image:
+      radial-gradient(50% 55% at 82% 8%, var(--color-sky-glow), #FFFFFF00),
+      linear-gradient(to bottom, var(--color-sky-top), var(--color-sky-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 @layer base {
   html {
     background-color: var(--color-sky-top);
