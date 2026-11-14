@@ -51,7 +51,7 @@ export default function PantallaResultado({
   pronostico,
 }: PantallaResultadoProps) {
   // La mín/máx de hoy sale del día completo del pronóstico (la del clima actual no sirve).
-  const hoy = pronostico.estado === "listo" ? pronostico.dias[0] : null;
+  const hoy = pronostico.estado === "listo" ? pronostico.hoy : null;
   const { momento, zonaHoraria } = clima;
   const hora = formatearHoraLocal(momento, zonaHoraria);
   const noche = cielo.endsWith("-night");

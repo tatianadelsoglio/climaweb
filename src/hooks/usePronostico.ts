@@ -3,20 +3,22 @@
 import { useEffect, useState } from "react";
 import { formatearCoordenada } from "@/lib/coordenadas";
 import { esRespuestaPronostico } from "@/lib/openMeteo";
-import type { ClimaActual, DiaPronostico } from "@/types/clima";
+import { separarHoy, type PronosticoLocal } from "@/lib/diaLocal";
+import type { ClimaActual } from "@/types/clima";
 
 export type EstadoPronostico =
   | { estado: "cargando" }
-  | { estado: "listo"; dias: DiaPronostico[] }
+  | ({ estado: "listo" } & PronosticoLocal)
   | { estado: "error" };
 
 const CARGANDO: EstadoPronostico = { estado: "cargando" };
 
 /**
- * Pronóstico de 7 días (hoy primero) de la ubicación del clima actual. Se pide
+ * Pronóstico de 7 días (hoy y los 6 siguientes) de la ubicación del clima actual. Se pide
  * cuando llega el clima, con las coordenadas que resolvió el proveedor, y se
  * cancela si cambia el clima. El clima actual se muestra sin esperarlo: si el
- * pronóstico falla, solo su panel pasa a estado de error.
+ * pronóstico falla, solo su panel pasa a estado de error. «Hoy» se identifica por
+ * fecha local de la ciudad (ver separarHoy), no por posición.
  */
 export function usePronostico(clima: ClimaActual | null): EstadoPronostico {
   const [respuesta, setRespuesta] = useState<{
@@ -27,6 +29,7 @@ export function usePronostico(clima: ClimaActual | null): EstadoPronostico {
   useEffect(() => {
     if (!clima) return;
     const controlador = new AbortController();
+    const { momento, zonaHoraria } = clima;
     const params = new URLSearchParams({
       lat: formatearCoordenada(clima.coordenadas.lat),
       lon: formatearCoordenada(clima.coordenadas.lon),
@@ -38,7 +41,7 @@ export function usePronostico(clima: ClimaActual | null): EstadoPronostico {
       });
       const datos: unknown = await respuestaHttp.json().catch(() => null);
       return respuestaHttp.ok && esRespuestaPronostico(datos)
-        ? { estado: "listo", dias: datos.dias }
+        ? { estado: "listo", ...separarHoy(datos.dias, momento, zonaHoraria) }
         : { estado: "error" };
     }
 

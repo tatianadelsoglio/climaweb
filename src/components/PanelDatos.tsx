@@ -51,7 +51,7 @@ export default function PanelDatos({ clima, pronostico }: PanelDatosProps) {
   const hayHorarioSolar = amanecer !== null && atardecer !== null;
   const progreso = progresoSolar(clima);
   // La probabilidad de hoy sale del día completo del pronóstico; sin él, «—».
-  const lluviaHoy = pronostico.estado === "listo" ? pronostico.dias[0].probabilidadLluvia : null;
+  const lluviaHoy = pronostico.estado === "listo" ? (pronostico.hoy?.probabilidadLluvia ?? null) : null;
 
   return (
     <section aria-label="Detalles" className="glass flex flex-col rounded-xl lg:rounded-2xl">

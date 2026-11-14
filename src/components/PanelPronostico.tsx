@@ -30,8 +30,7 @@ function Lluvia({ porcentaje, className }: { porcentaje: number | null; classNam
  * Un día. Mobile y tablet: una fila (día · ícono · lluvia · temperaturas), porque
  * 7 columnas no entran en 350 px. Desktop: una columna por día.
  */
-function Dia({ dia, esHoy, unidad }: { dia: DiaPronostico; esHoy: boolean; unidad: Unidad }) {
-  const etiqueta = esHoy ? "Hoy" : formatearDiaPronostico(dia.fecha, true);
+function Dia({ dia, etiqueta, unidad }: { dia: DiaPronostico; etiqueta: string; unidad: Unidad }) {
 
   return (
     <li className="flex items-center gap-md border-t border-glass-line px-xl py-md first:border-t-0 lg:min-w-0 lg:flex-1 lg:flex-col lg:gap-sm lg:border-t-0 lg:border-l lg:px-md lg:py-xl lg:first:border-l-0">
@@ -50,6 +49,20 @@ function Dia({ dia, esHoy, unidad }: { dia: DiaPronostico; esHoy: boolean; unida
           <span className="sr-only">Mínima </span>
           {formatearTemperatura(dia.minima, unidad)}
         </span>
+      </p>
+    </li>
+  );
+}
+
+/** «Hoy» sin datos (el proveedor no lo trajo): se muestra «—» y los demás días no se corren. */
+function HoyNoDisponible() {
+  return (
+    <li className="flex items-center gap-md border-t border-glass-line px-xl py-md first:border-t-0 lg:min-w-0 lg:flex-1 lg:flex-col lg:gap-sm lg:border-t-0 lg:border-l lg:px-md lg:py-xl lg:first:border-l-0">
+      <p className="w-[72px] shrink-0 text-caption font-semibold text-fg-muted lg:w-auto">Hoy</p>
+      <span aria-hidden className="size-7 shrink-0 lg:size-9" />
+      <p className="ml-auto font-display text-stat font-semibold lg:ml-0 lg:text-title-lg">
+        <span aria-hidden>—</span>
+        <span className="sr-only">Sin datos para hoy</span>
       </p>
     </li>
   );
@@ -95,8 +108,18 @@ export default function PanelPronostico({ pronostico, unidad }: PanelPronosticoP
       >
         {pronostico.estado === "listo" && (
           <ol className="flex flex-col lg:flex-row">
-            {pronostico.dias.map((dia, i) => (
-              <Dia key={dia.fecha} dia={dia} esHoy={i === 0} unidad={unidad} />
+            {pronostico.hoy ? (
+              <Dia dia={pronostico.hoy} etiqueta="Hoy" unidad={unidad} />
+            ) : (
+              <HoyNoDisponible />
+            )}
+            {pronostico.siguientes.slice(0, DIAS - 1).map((dia) => (
+              <Dia
+                key={dia.fecha}
+                dia={dia}
+                etiqueta={formatearDiaPronostico(dia.fecha, true)}
+                unidad={unidad}
+              />
             ))}
           </ol>
         )}
