@@ -18,28 +18,28 @@ function textoNoVacio(valor: unknown): string | null {
   return typeof valor === "string" && valor.trim() !== "" ? valor.trim() : null;
 }
 
-function sugerenciaDeOpenWeather(item: unknown): Sugerencia | null {
+/** Un resultado de Open-Meteo (con language=es el nombre ya viene en español). */
+function sugerenciaDeOpenMeteo(item: unknown): Sugerencia | null {
   if (!esObjeto(item)) return null;
-  const original = textoNoVacio(item.name);
-  const pais = textoNoVacio(item.country);
+  const nombre = textoNoVacio(item.name);
+  const pais = textoNoVacio(item.country_code);
   if (
-    !original ||
+    !nombre ||
     !pais ||
     !/^[A-Za-z]{2}$/.test(pais) ||
-    !esNumero(item.lat) ||
-    !esNumero(item.lon) ||
-    Math.abs(item.lat) > 90 ||
-    Math.abs(item.lon) > 180
+    !esNumero(item.latitude) ||
+    !esNumero(item.longitude) ||
+    Math.abs(item.latitude) > 90 ||
+    Math.abs(item.longitude) > 180
   ) {
     return null;
   }
-  const nombres = esObjeto(item.local_names) ? item.local_names : null;
   return {
-    nombre: textoNoVacio(nombres?.es) ?? original,
-    estado: textoNoVacio(item.state),
+    nombre,
+    estado: textoNoVacio(item.admin1),
     pais: pais.toUpperCase(),
-    lat: item.lat,
-    lon: item.lon,
+    lat: item.latitude,
+    lon: item.longitude,
   };
 }
 
@@ -55,17 +55,16 @@ export function sugerenciasVigentes(
 }
 
 /**
- * Respuesta de /geo/1.0/direct → sugerencias. Descarta los elementos inválidos
- * y los repetidos (mismo nombre, estado y país, o mismas coordenadas: la API
- * a veces devuelve el mismo lugar dos veces, también con otro nombre) y
- * respeta el límite.
+ * Respuesta de /v1/search de Open-Meteo → sugerencias. Descarta los elementos
+ * inválidos y los repetidos (mismo nombre, estado y país, o mismas coordenadas)
+ * y respeta el límite. Sin resultados, Open-Meteo omite `results`.
  */
 export function normalizarGeocoding(datos: unknown): Sugerencia[] {
-  if (!Array.isArray(datos)) return [];
+  if (!esObjeto(datos) || !Array.isArray(datos.results)) return [];
   const vistas = new Set<string>();
   const sugerencias: Sugerencia[] = [];
-  for (const item of datos as unknown[]) {
-    const sugerencia = sugerenciaDeOpenWeather(item);
+  for (const item of datos.results as unknown[]) {
+    const sugerencia = sugerenciaDeOpenMeteo(item);
     if (!sugerencia) continue;
     const claves = [
       [sugerencia.nombre, sugerencia.estado ?? "", sugerencia.pais].join("|").toLocaleLowerCase("es"),
