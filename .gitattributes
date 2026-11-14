@@ -1,0 +1,2 @@
+# Los .pen de pen.dev no deben pasar por la conversión de fin de línea.
+*.pen -text
