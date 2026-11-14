@@ -71,18 +71,16 @@ describe("viento y humedad", () => {
 });
 
 describe("formatearDiaPronostico", () => {
-  it("usa el día de la semana y el número en el huso de la ciudad", () => {
-    // 15/11/2026 15:00 UTC = domingo 12:00 en Córdoba.
-    const domingo = Date.UTC(2026, 10, 15, 15, 0) / 1000;
-    assert.equal(formatearDiaPronostico(domingo, CORDOBA, true), "Dom 15");
-    assert.equal(formatearDiaPronostico(domingo, CORDOBA, false), "Dom");
+  it("usa el día de la semana y el número de la fecha local", () => {
+    assert.equal(formatearDiaPronostico("2026-11-15", true), "Dom 15");
+    assert.equal(formatearDiaPronostico("2026-11-15", false), "Dom");
+    assert.equal(formatearDiaPronostico("2026-11-14", true), "Sáb 14");
   });
 
-  it("respeta el huso: cerca de la medianoche UTC el día local es otro", () => {
-    // 16/11/2026 01:00 UTC = domingo 22:00 en Córdoba, pero lunes en Madrid.
-    const instante = Date.UTC(2026, 10, 16, 1, 0) / 1000;
-    assert.equal(formatearDiaPronostico(instante, CORDOBA, true), "Dom 15");
-    assert.equal(formatearDiaPronostico(instante, 3600, true), "Lun 16");
+  it("cruza el fin de mes y de año", () => {
+    assert.equal(formatearDiaPronostico("2026-11-30", true), "Lun 30");
+    assert.equal(formatearDiaPronostico("2026-12-01", true), "Mar 1");
+    assert.equal(formatearDiaPronostico("2027-01-01", true), "Vie 1");
   });
 });
 

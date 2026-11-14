@@ -53,7 +53,7 @@ export default function PantallaCargando({ consulta }: PantallaCargandoProps) {
           </div>
         </div>
         <div className="flex gap-md">
-          {Array.from({ length: 5 }, (_, i) => (
+          {Array.from({ length: 7 }, (_, i) => (
             <Esqueleto key={i} className="h-[100px] flex-1 rounded-2xl" />
           ))}
         </div>

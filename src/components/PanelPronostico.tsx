@@ -1,17 +1,20 @@
 import { Umbrella } from "lucide-react";
 import IconoCondicion from "@/components/IconoCondicion";
+import type { EstadoPronostico } from "@/hooks/usePronostico";
+import { descripcionCondicion } from "@/lib/condiciones";
 import { formatearDiaPronostico, formatearTemperatura } from "@/lib/formatoClima";
 import type { Unidad } from "@/lib/unidades";
 import type { DiaPronostico } from "@/types/clima";
 
 interface PanelPronosticoProps {
-  /** null cuando el pronóstico no pudo obtenerse. */
-  dias: DiaPronostico[] | null;
-  zonaHoraria: number;
+  pronostico: EstadoPronostico;
   unidad: Unidad;
 }
 
-function Lluvia({ porcentaje, className }: { porcentaje: number; className: string }) {
+const DIAS = 7;
+
+function Lluvia({ porcentaje, className }: { porcentaje: number | null; className: string }) {
+  if (porcentaje === null) return null;
   return (
     <p className={`items-center gap-2xs text-caption text-fg-muted ${className}`}>
       <Umbrella aria-hidden className="size-3.5" />
@@ -23,77 +26,83 @@ function Lluvia({ porcentaje, className }: { porcentaje: number; className: stri
   );
 }
 
-function Dia({
-  dia,
-  zonaHoraria,
-  unidad,
-}: {
-  dia: DiaPronostico;
-  zonaHoraria: number;
-  unidad: Unidad;
-}) {
-  const etiquetaCorta = formatearDiaPronostico(dia.instante, zonaHoraria, false);
-  const etiquetaLarga = formatearDiaPronostico(dia.instante, zonaHoraria, true);
+/**
+ * Un día. Mobile y tablet: una fila (día · ícono · lluvia · temperaturas), porque
+ * 7 columnas no entran en 350 px. Desktop: una columna por día.
+ */
+function Dia({ dia, esHoy, unidad }: { dia: DiaPronostico; esHoy: boolean; unidad: Unidad }) {
+  const etiqueta = esHoy ? "Hoy" : formatearDiaPronostico(dia.fecha, true);
 
   return (
-    <li className="flex min-w-0 flex-1 flex-col items-center gap-sm border-l border-glass-line py-lg first:border-l-0 lg:flex-row lg:gap-lg lg:px-lg lg:py-xl xl:px-2xl">
-      {/* Mobile: día, ícono y temperaturas en columna. Desktop: ícono, texto y lluvia en fila. */}
-      <IconoCondicion
-        codigo={dia.codigo}
-        noche={false}
-        className="order-2 size-7 shrink-0 lg:order-1 lg:size-9"
-      />
-      <div className="contents lg:order-2 lg:flex lg:min-w-0 lg:flex-1 lg:flex-col lg:gap-3xs">
-        <p className="order-1 text-caption font-semibold whitespace-nowrap text-fg-muted lg:order-none">
-          <span className="lg:hidden">{etiquetaCorta}</span>
-          <span className="hidden lg:inline">{etiquetaLarga}</span>
-        </p>
-        <p className="order-3 flex flex-col items-center gap-sm lg:order-none lg:flex-row lg:items-end">
-          <span className="font-display text-stat font-semibold lg:text-title-lg">
-            <span className="sr-only">Máxima </span>
-            {formatearTemperatura(dia.maxima, unidad)}
-          </span>
-          <span className="text-caption text-fg-muted lg:pb-3xs lg:text-lead lg:font-medium">
-            <span className="sr-only">Mínima </span>
-            {formatearTemperatura(dia.minima, unidad)}
-          </span>
-        </p>
-        {/* Con poco ancho (lg a xl) la lluvia va debajo del texto; desde xl, a la derecha. */}
-        <Lluvia
-          porcentaje={dia.probabilidadLluvia}
-          className="order-4 hidden lg:order-none lg:flex xl:hidden"
-        />
-      </div>
-      <Lluvia
-        porcentaje={dia.probabilidadLluvia}
-        className="order-4 hidden shrink-0 xl:flex"
-      />
+    <li className="flex items-center gap-md border-t border-glass-line px-xl py-md first:border-t-0 lg:min-w-0 lg:flex-1 lg:flex-col lg:gap-sm lg:border-t-0 lg:border-l lg:px-md lg:py-xl lg:first:border-l-0">
+      <p className="w-[72px] shrink-0 text-caption font-semibold whitespace-nowrap text-fg-muted lg:w-auto">
+        {etiqueta}
+        <span className="sr-only">: {descripcionCondicion(dia.codigo)}</span>
+      </p>
+      <IconoCondicion codigo={dia.codigo} noche={false} className="size-7 shrink-0 lg:size-9" />
+      <Lluvia porcentaje={dia.probabilidadLluvia} className="flex lg:order-last" />
+      <p className="ml-auto flex items-baseline gap-sm lg:ml-0 lg:flex-col lg:items-center lg:gap-3xs">
+        <span className="font-display text-stat font-semibold lg:text-title-lg">
+          <span className="sr-only">Máxima </span>
+          {formatearTemperatura(dia.maxima, unidad)}
+        </span>
+        <span className="text-caption text-fg-muted lg:text-lead lg:font-medium">
+          <span className="sr-only">Mínima </span>
+          {formatearTemperatura(dia.minima, unidad)}
+        </span>
+      </p>
     </li>
   );
 }
 
-export default function PanelPronostico({ dias, zonaHoraria, unidad }: PanelPronosticoProps) {
-  const hayDias = dias !== null && dias.length > 0;
+function Mensaje({ children }: { children: string }) {
+  return (
+    <p className="flex min-h-[144px] items-center justify-center px-xl text-center text-caption text-fg-muted lg:min-h-[93px]">
+      {children}
+    </p>
+  );
+}
 
+function Esqueleto() {
+  return (
+    <div aria-hidden className="flex flex-col lg:flex-row">
+      {Array.from({ length: DIAS }, (_, i) => (
+        <div
+          key={i}
+          className="flex h-14 items-center gap-md border-t border-glass-line px-xl first:border-t-0 lg:h-[140px] lg:flex-1 lg:flex-col lg:justify-center lg:border-t-0 lg:border-l lg:first:border-l-0"
+        >
+          <div className="h-4 w-[72px] animate-pulse rounded-xs bg-skeleton lg:w-12" />
+          <div className="size-7 animate-pulse rounded-pill bg-skeleton lg:size-9" />
+          <div className="ml-auto h-6 w-16 animate-pulse rounded-xs bg-skeleton lg:ml-0" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function PanelPronostico({ pronostico, unidad }: PanelPronosticoProps) {
   return (
     <section aria-labelledby="titulo-pronostico" className="flex flex-col gap-xl">
       <h2
         id="titulo-pronostico"
         className="pt-sm font-display text-subtitle font-semibold lg:sr-only"
       >
-        Próximos 5 días
+        Próximos 7 días
       </h2>
-      <div className="glass overflow-hidden rounded-xl lg:rounded-2xl">
-        {hayDias ? (
-          <ol className="flex">
-            {dias.map((dia) => (
-              <Dia key={dia.fecha} dia={dia} zonaHoraria={zonaHoraria} unidad={unidad} />
+      <div
+        aria-busy={pronostico.estado === "cargando"}
+        className="glass overflow-hidden rounded-xl lg:rounded-2xl"
+      >
+        {pronostico.estado === "listo" && (
+          <ol className="flex flex-col lg:flex-row">
+            {pronostico.dias.map((dia, i) => (
+              <Dia key={dia.fecha} dia={dia} esHoy={i === 0} unidad={unidad} />
             ))}
           </ol>
-        ) : (
-          <p className="flex min-h-[144px] items-center justify-center px-xl text-center text-caption text-fg-muted lg:min-h-[93px]">
-            No pudimos cargar el pronóstico de los próximos días.
-          </p>
+        )}
+        {pronostico.estado === "cargando" && <Esqueleto />}
+        {pronostico.estado === "error" && (
+          <Mensaje>No pudimos cargar el pronóstico de los próximos días.</Mensaje>
         )}
       </div>
     </section>

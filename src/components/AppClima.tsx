@@ -17,6 +17,7 @@ import { useClima } from "@/hooks/useClima";
 import { useFocoEnContenido } from "@/hooks/useFocoEnContenido";
 import { useGeolocalizacion } from "@/hooks/useGeolocalizacion";
 import { useSugerencias } from "@/hooks/useSugerencias";
+import { usePronostico } from "@/hooks/usePronostico";
 import { useUnidad } from "@/hooks/useUnidad";
 import { interpretarBusqueda } from "@/lib/parsearBusqueda";
 import { textoSugerencia } from "@/lib/sugerencias";
@@ -47,6 +48,7 @@ export default function AppClima() {
   // ese mismo texto (que no es una búsqueda válida por sí solo) se usa la elegida.
   const seleccionRef = useRef<{ texto: string; consulta: ConsultaCoordenadas } | null>(null);
   const autocompletado = useAutocompletado(texto);
+  const pronostico = usePronostico(resultado.estado === "exito" ? resultado.clima : null);
   useCieloDocumento(resultado.cielo);
   const { contenedorRef, llevarFocoAlContenido } = useFocoEnContenido(
     resultado.estado,
@@ -186,7 +188,12 @@ export default function AppClima() {
         )}
         {resultado.estado === "cargando" && <PantallaCargando consulta={resultado.consulta} />}
         {resultado.estado === "exito" && (
-          <PantallaResultado clima={resultado.clima} cielo={resultado.cielo} unidad={unidad} />
+          <PantallaResultado
+            clima={resultado.clima}
+            cielo={resultado.cielo}
+            unidad={unidad}
+            pronostico={pronostico}
+          />
         )}
         {resultado.estado === "error" && (
           <PantallaError

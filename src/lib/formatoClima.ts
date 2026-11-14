@@ -59,18 +59,17 @@ export function formatearFechaLocal(
   return largo ? `${dia} ${day} de ${month}` : `${dia} ${day} ${sinPunto(month)}`;
 }
 
-/** "Dom 15" (con el número del día) o "Dom" (solo el día de la semana), en el huso de la ciudad. */
-export function formatearDiaPronostico(
-  instante: number,
-  zonaHoraria: number,
-  conNumero: boolean,
-): string {
-  const { weekday, day } = partesLocales(instante, zonaHoraria, {
-    weekday: "short",
-    day: "numeric",
-  });
-  const dia = capitalizar(sinPunto(weekday));
-  return conNumero ? `${dia} ${day}` : dia;
+/**
+ * "Dom 15" (con el número del día) o "Dom" (solo el día de la semana) para un
+ * día del pronóstico, dado como fecha local de la ciudad («2026-11-15»). Una
+ * fecha sin hora no cambia con el huso: se formatea tal cual.
+ */
+export function formatearDiaPronostico(fecha: string, conNumero: boolean): string {
+  const [anio, mes, dia] = fecha.split("-").map(Number);
+  const mediodia = Date.UTC(anio, mes - 1, dia, 12) / 1000;
+  const partes = partesLocales(mediodia, 0, { weekday: "short", day: "numeric" });
+  const semana = capitalizar(sinPunto(partes.weekday));
+  return conNumero ? `${semana} ${partes.day}` : semana;
 }
 
 /** 0 → "N", 135 → "SE", 315 → "NO". */

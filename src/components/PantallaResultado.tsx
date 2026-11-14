@@ -10,6 +10,7 @@ import {
   nombrePais,
 } from "@/lib/formatoClima";
 import type { Cielo } from "@/lib/resolverCielo";
+import type { EstadoPronostico } from "@/hooks/usePronostico";
 import type { Unidad } from "@/lib/unidades";
 import type { ClimaActual } from "@/types/clima";
 
@@ -17,6 +18,7 @@ interface PantallaResultadoProps {
   clima: ClimaActual;
   cielo: Cielo;
   unidad: Unidad;
+  pronostico: EstadoPronostico;
 }
 
 function Extremo({
@@ -27,7 +29,8 @@ function Extremo({
 }: {
   icono: LucideIcon;
   etiqueta: string;
-  valor: number;
+  /** null mientras llega el pronóstico (o si falló): se muestra «—». */
+  valor: number | null;
   unidad: Unidad;
 }) {
   return (
@@ -35,13 +38,20 @@ function Extremo({
       <Icono aria-hidden className="size-4 text-fg-muted lg:size-[18px]" />
       <span className="font-bold text-fg lg:font-semibold">
         <span className="sr-only lg:not-sr-only">{etiqueta} </span>
-        {formatearTemperatura(valor, unidad)}
+        {valor === null ? "—" : formatearTemperatura(valor, unidad)}
       </span>
     </p>
   );
 }
 
-export default function PantallaResultado({ clima, cielo, unidad }: PantallaResultadoProps) {
+export default function PantallaResultado({
+  clima,
+  cielo,
+  unidad,
+  pronostico,
+}: PantallaResultadoProps) {
+  // La mín/máx de hoy sale del día completo del pronóstico (la del clima actual no sirve).
+  const hoy = pronostico.estado === "listo" ? pronostico.dias[0] : null;
   const { momento, zonaHoraria } = clima;
   const hora = formatearHoraLocal(momento, zonaHoraria);
   const noche = cielo.endsWith("-night");
@@ -95,8 +105,8 @@ export default function PantallaResultado({ clima, cielo, unidad }: PantallaResu
               <p className="text-fg-muted">
                 Sensación {formatearTemperatura(clima.sensacionTermica, unidad)}
               </p>
-              <Extremo icono={ArrowUp} etiqueta="Máx" valor={clima.temperaturaMaxima} unidad={unidad} />
-              <Extremo icono={ArrowDown} etiqueta="Mín" valor={clima.temperaturaMinima} unidad={unidad} />
+              <Extremo icono={ArrowUp} etiqueta="Máx" valor={hoy?.maxima ?? null} unidad={unidad} />
+              <Extremo icono={ArrowDown} etiqueta="Mín" valor={hoy?.minima ?? null} unidad={unidad} />
             </div>
           </div>
         </section>
@@ -113,7 +123,7 @@ export default function PantallaResultado({ clima, cielo, unidad }: PantallaResu
         </div>
       </div>
 
-      <PanelPronostico dias={clima.pronostico} zonaHoraria={zonaHoraria} unidad={unidad} />
+      <PanelPronostico pronostico={pronostico} unidad={unidad} />
     </div>
   );
 }

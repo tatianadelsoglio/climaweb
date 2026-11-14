@@ -15,7 +15,6 @@ import type {
   CodigoError,
   ConsultaClima,
   ConsultaCoordenadas,
-  DiaPronostico,
   ErrorApi,
 } from "@/types/clima";
 
@@ -87,20 +86,8 @@ function esNumeroONulo(valor: unknown): valor is number | null {
   return valor === null || esNumero(valor);
 }
 
-function esDiaPronostico(dia: unknown): dia is DiaPronostico {
-  return (
-    esObjeto(dia) &&
-    typeof dia.fecha === "string" &&
-    esNumero(dia.instante) &&
-    esNumero(dia.minima) &&
-    esNumero(dia.maxima) &&
-    esNumero(dia.codigo) &&
-    esNumero(dia.probabilidadLluvia)
-  );
-}
-
-function esPronosticoValido(pronostico: unknown): pronostico is DiaPronostico[] | null {
-  return pronostico === null || (Array.isArray(pronostico) && pronostico.every(esDiaPronostico));
+function esCoordenadas(valor: unknown): boolean {
+  return esObjeto(valor) && esNumero(valor.lat) && esNumero(valor.lon);
 }
 
 function esClimaActual(datos: unknown): datos is ClimaActual {
@@ -111,8 +98,6 @@ function esClimaActual(datos: unknown): datos is ClimaActual {
     typeof datos.ciudad === "string" &&
     typeof datos.pais === "string" &&
     esNumero(datos.temperatura) &&
-    esNumero(datos.temperaturaMaxima) &&
-    esNumero(datos.temperaturaMinima) &&
     esNumero(datos.sensacionTermica) &&
     esNumero(datos.humedad) &&
     esNumero(datos.viento.velocidad) &&
@@ -122,8 +107,7 @@ function esClimaActual(datos: unknown): datos is ClimaActual {
     esNumeroONulo(datos.atardecer) &&
     esNumero(datos.zonaHoraria) &&
     esNumero(datos.momento) &&
-    esNumeroONulo(datos.probabilidadLluvia) &&
-    esPronosticoValido(datos.pronostico)
+    esCoordenadas(datos.coordenadas)
   );
 }
 

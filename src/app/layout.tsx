@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
   applicationName: "Atmósfera",
   description:
-    "Atmósfera: el clima actual y el pronóstico de 5 días de cualquier ciudad, con un cielo que cambia según la hora local.",
+    "Atmósfera: el clima actual y el pronóstico de 7 días de cualquier ciudad, con un cielo que cambia según la hora local.",
 };
 
 export const viewport: Viewport = {

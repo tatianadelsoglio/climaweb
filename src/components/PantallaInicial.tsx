@@ -59,7 +59,7 @@ export default function PantallaInicial({
         <span className="lg:hidden">Buscá una ciudad o dejá que la encontremos por vos.</span>
         <span className="hidden lg:inline">
           Buscá una ciudad arriba o dejá que la encontremos por vos. Te mostramos la
-          temperatura, cómo se siente y qué viene en los próximos 5 días.
+          temperatura, cómo se siente y qué viene en los próximos 7 días.
         </span>
       </p>
 

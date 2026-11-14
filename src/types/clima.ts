@@ -17,18 +17,22 @@ export interface ConsultaCiudad extends BusquedaValida {
 
 export type ConsultaClima = ConsultaCiudad | ConsultaCoordenadas;
 
-/** Un día del pronóstico, agrupado por día local de la ciudad. Celsius. */
+/** Un día del pronóstico (día completo, en el huso de la ciudad). Celsius. */
 export interface DiaPronostico {
   /** Día local de la ciudad, «2026-11-15». */
   fecha: string;
-  /** Instante de la franja del mediodía (representa al día y da su fecha local). */
-  instante: number;
+  /** Mínima y máxima de todo el día, incluidas las horas que ya pasaron. */
   minima: number;
   maxima: number;
-  /** Código de condición de OpenWeather del mediodía. */
+  /** Código de condición equivalente de OpenWeather (los de Open-Meteo se traducen). */
   codigo: number;
-  /** De 0 a 100: la mayor del día. */
-  probabilidadLluvia: number;
+  /** Probabilidad máxima de lluvia del día, de 0 a 100; null si el proveedor no la informa. */
+  probabilidadLluvia: number | null;
+}
+
+/** Respuesta de /api/forecast: hoy y los 6 días siguientes, en ese orden. */
+export interface RespuestaPronostico {
+  dias: DiaPronostico[];
 }
 
 /** Clima actual normalizado: grados Celsius, km/h y tiempos en segundos Unix (UTC). */
@@ -36,9 +40,6 @@ export interface ClimaActual {
   ciudad: string;
   pais: string;
   temperatura: number;
-  /** Máxima y mínima de hoy (día local), calculadas con el pronóstico y la temperatura actual. */
-  temperaturaMaxima: number;
-  temperaturaMinima: number;
   sensacionTermica: number;
   /** Porcentaje de 0 a 100. */
   humedad: number;
@@ -58,10 +59,8 @@ export interface ClimaActual {
   zonaHoraria: number;
   /** Instante de la consulta. */
   momento: number;
-  /** Probabilidad de lluvia de hoy, de 0 a 100; null sin pronóstico. */
-  probabilidadLluvia: number | null;
-  /** Próximos días; null si el pronóstico no pudo obtenerse (el clima actual sigue valiendo). */
-  pronostico: DiaPronostico[] | null;
+  /** Ubicación que resolvió el proveedor: con ella se pide el pronóstico. */
+  coordenadas: CoordenadasValidas;
 }
 
 export type CodigoError =
