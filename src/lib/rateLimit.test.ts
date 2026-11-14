@@ -50,6 +50,16 @@ describe("AlmacenEnMemoria (cubo de fichas)", () => {
     expect(almacen.consumir("ip", CONFIG, 5_000).permitido).toBe(false);
   });
 
+  it("tras un retroceso del reloj, el relleno no cuenta segundos que no pasaron", () => {
+    const almacen = new AlmacenEnMemoria();
+    for (let i = 0; i < 3; i++) almacen.consumir("ip", CONFIG, 10_000); // cubo vacío en t = 10 s
+    expect(almacen.consumir("ip", CONFIG, 5_000).permitido).toBe(false); // el reloj se atrasó 5 s
+    // En t = 10 s no pasó nada desde la última vez que se vio ese instante: sigue vacío.
+    expect(almacen.consumir("ip", CONFIG, 10_000).permitido).toBe(false);
+    // Un segundo real después sí hay una ficha.
+    expect(almacen.consumir("ip", CONFIG, 11_000).permitido).toBe(true);
+  });
+
   it("el Retry-After es de al menos 1 segundo", () => {
     const almacen = new AlmacenEnMemoria();
     const rapido: ConfigLimite = { capacidad: 1, fichasPorSegundo: 100 };

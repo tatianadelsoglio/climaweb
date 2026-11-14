@@ -65,14 +65,18 @@ export class AlmacenEnMemoria implements AlmacenLimite {
       ? Math.min(config.capacidad, previo.fichas + transcurridoS * config.fichasPorSegundo)
       : config.capacidad;
 
+    // El tiempo del cubo nunca retrocede: si el reloj se atrasó, se conserva el último
+    // instante visto, así el relleno posterior no cuenta segundos que no pasaron.
+    const ultimoMs = previo ? Math.max(previo.ultimoMs, ahoraMs) : ahoraMs;
+
     // Reinsertar mueve la clave al final: el orden del Map es el de uso reciente.
     this.cubos.delete(clave);
     if (fichas >= 1) {
-      this.cubos.set(clave, { ...config, fichas: fichas - 1, ultimoMs: ahoraMs });
+      this.cubos.set(clave, { ...config, fichas: fichas - 1, ultimoMs });
       this.acotar();
       return { permitido: true, reintentarEnSegundos: 0 };
     }
-    this.cubos.set(clave, { ...config, fichas, ultimoMs: ahoraMs });
+    this.cubos.set(clave, { ...config, fichas, ultimoMs });
     this.acotar();
     return {
       permitido: false,
